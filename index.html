@@ -379,12 +379,37 @@
   .care-item{background:var(--paper-soft);border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
   .care-item .k{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);font-weight:700;margin-bottom:4px;}
   .care-item .v{font-size:13px;color:var(--ink);line-height:1.45;white-space:pre-wrap;}
+  .doctor-actions a{display:inline-flex;align-items:center;text-decoration:none;margin-right:8px;margin-top:8px;}
+  .tracker-group{border-top:1px solid var(--line);padding-top:14px;margin-top:14px;}
+  .tracker-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px;}
+  .tracker-head h3{font-size:13px;margin:0;color:var(--ink);}
+  .tracker-total{font-size:12px;font-weight:750;color:var(--accent);}
+  .tracker-line{display:flex;gap:8px;align-items:center;overflow-x:auto;padding:2px 1px 7px;scrollbar-width:thin;}
+  .tracker-check{display:inline-flex;align-items:center;gap:7px;white-space:nowrap;border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;font-size:12px;color:var(--ink-soft);}
+  .tracker-check input{accent-color:var(--accent);}
+  .tracker-check strong{color:var(--ink);font-weight:700;}
+  .walk-grid{display:grid;grid-template-columns:90px 1fr;gap:8px 10px;align-items:center;}
+  .walk-label{font-size:12px;font-weight:650;color:var(--ink-soft);}
+  .segment{display:flex;gap:6px;flex-wrap:nowrap;}
+  .segment button{border:1px solid var(--line);background:#fff;color:var(--ink-soft);border-radius:9px;padding:7px 10px;font-size:12px;cursor:pointer;}
+  .segment button.selected{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .protein-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:9px;align-items:center;padding:9px 0;border-top:1px solid var(--line-soft);}
+  .protein-row:first-child{border-top:0;}
+  .protein-row input[type=checkbox]{accent-color:var(--accent);}
+  .protein-name{font-size:12.5px;font-weight:650;color:var(--ink);}
+  .protein-meta{font-size:11.5px;color:var(--ink-soft);}
+  .settings-gear{border:1px solid rgba(255,255,255,.35);background:rgba(255,255,255,.12);color:#fff;border-radius:10px;width:38px;height:38px;font-size:19px;cursor:pointer;flex:none;}
+  .settings-overlay{position:fixed;inset:0;z-index:120;background:rgba(11,28,24,.58);display:none;align-items:flex-start;justify-content:flex-end;padding:0;}
+  .settings-overlay.show{display:flex;}
+  .settings-panel{width:min(560px,100%);height:100%;margin:0;border-radius:18px 0 0 18px;overflow-y:auto;padding:24px;box-shadow:-12px 0 40px rgba(0,0,0,.18);}
+  .settings-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:8px;}
+  .settings-close{border:1px solid var(--line);background:#fff;border-radius:9px;width:34px;height:34px;font-size:20px;cursor:pointer;}
   .today-dock{position:fixed;z-index:70;right:18px;bottom:18px;width:min(360px,calc(100vw - 36px));border:1px solid rgba(47,125,110,.25);border-radius:16px;background:rgba(255,255,255,.96);box-shadow:0 10px 32px rgba(10,45,38,.18);padding:12px 14px;text-align:left;color:var(--ink);cursor:pointer;backdrop-filter:blur(10px);}
   .today-dock-title{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;font-weight:750;color:var(--teal);}
   .today-dock-next{display:block;margin-top:4px;font-size:12px;line-height:1.35;color:var(--ink-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .today-dock:focus-visible{outline:3px solid rgba(47,125,110,.28);outline-offset:2px;}
   #todayCard{scroll-margin-top:18px;}
-  @media(max-width:640px){body{padding-bottom:92px}.today-dock{right:10px;bottom:10px;width:calc(100vw - 20px)}}
+  @media(max-width:640px){body{padding-bottom:92px}.today-dock{right:10px;bottom:10px;width:calc(100vw - 20px)}.settings-panel{border-radius:0}.walk-grid{grid-template-columns:72px 1fr}.segment button{padding:7px 8px}}
 
   @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
 </style>
@@ -402,6 +427,7 @@
     <div class="hero-head">
       <button class="install-btn" id="installBtn" type="button">＋ Add to Home Screen</button>
       <div class="brand-lockup"><img class="brand-logo" src="icon-192-v3.png" alt=""><p class="hero-title" id="dashboardTitle">Pregnancy Dashboard</p></div>
+      <button class="settings-gear" id="settingsBtn" type="button" aria-label="Open settings">⚙</button>
     </div>
     <div class="hero-top">
       <div>
@@ -450,6 +476,12 @@
       </div>
     </div>
 
+    <div class="card col-full" id="doctorCard" hidden>
+      <h2>Doctor</h2>
+      <div class="care-grid" id="doctorGrid"></div>
+      <div class="doctor-actions" id="doctorActions"></div>
+    </div>
+
     <div class="card col-full" id="careSummaryCard" hidden>
       <h2>Personal plan details</h2>
       <div class="sub">These details come from the completed questionnaire. They are not medical recommendations from this app.</div>
@@ -464,6 +496,27 @@
         <div class="progress-count" id="progCount">0 / 0 done</div>
       </div>
       <div class="protein-goal" id="proteinGoal" hidden></div>
+
+      <div class="tracker-group" id="medicineTracker">
+        <div class="tracker-head"><h3>Medicines</h3><span class="tracker-total" id="medicineTotal"></span></div>
+        <div class="tracker-line" id="medicineStrip"></div>
+      </div>
+      <div class="tracker-group" id="hydrationTracker">
+        <div class="tracker-head"><h3>Hydration</h3><span class="tracker-total" id="hydrationTotal">0 L</span></div>
+        <div class="tracker-line" id="hydrationStrip"></div>
+      </div>
+      <div class="tracker-group" id="activityTracker">
+        <div class="tracker-head"><h3>Activity</h3><span class="tracker-total" id="walkTotal">0 km today</span></div>
+        <div class="walk-grid">
+          <span class="walk-label">Morning</span><div class="segment" id="walkMorning"></div>
+          <span class="walk-label">Evening</span><div class="segment" id="walkEvening"></div>
+        </div>
+        <label class="tracker-check" id="yogaTracker" style="margin-top:10px"><input type="checkbox" id="yogaDone"><strong>Yoga completed today</strong></label>
+      </div>
+      <div class="tracker-group" id="proteinTracker">
+        <div class="tracker-head"><h3>Protein from meals</h3><span class="tracker-total" id="proteinTotal">0 g</span></div>
+        <div id="proteinRows"></div>
+      </div>
 
       <details class="menu-editor" id="menuEditor">
         <summary><span class="em">🍽</span> This week's breakfast, lunch &amp; dinner — tap to set or edit</summary>
@@ -529,9 +582,10 @@
       <ul class="q-list" id="qList"></ul>
     </div>
 
-    <div class="card col-full" id="dataCard">
-      <h2>Private sync, backup &amp; recovery</h2>
-      <div class="sub">Your health information stays encrypted during sync. GitHub contains app code only, never your entries.</div>
+    <div class="settings-overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="card settings-panel" id="dataCard">
+      <div class="settings-head"><h2 id="settingsTitle">Settings</h2><button class="settings-close" id="settingsClose" type="button" aria-label="Close settings">×</button></div>
+      <div class="sub"><strong>Private sync, backup &amp; recovery</strong><br>Your health information stays encrypted during sync. GitHub contains app code only, never your entries.</div>
 
       <div id="syncInsecurePanel" class="sync-panel">
         <p class="privacy-copy">Open the secure HTTPS app link to use encrypted device sync.</p>
@@ -573,6 +627,7 @@
         <button class="btn-ghost danger-btn" id="deleteEverywhereBtn" type="button">Delete everywhere</button>
       </div>
       <div class="backup-state" id="backupState">No backup created on this device yet.</div>
+    </div>
     </div>
   </div>
 
@@ -673,6 +728,7 @@
     {id:'n5', block:'Night', cat:'check', text:"Note tonight's fetal movement pattern before sleeping"},
     {id:'n6', block:'Night', cat:'diet', text:'Milk (300–350 ml)', protein:'~10–12 g'}
   ];
+  const BASELINE_MEAL_ITEMS=CHECKLIST.filter(item=>['m4','d1','e1','n1','n6'].includes(item.id)).map(item=>Object.assign({},item));
   const CAT_LABEL = {diet:'Diet', med:'Medicine', activity:'Activity', check:'Check-in'};
 
   let checklistState = {};
@@ -682,6 +738,7 @@
   let activePersonalConfig = null;
   let customDishes = [];
   let customBreakfastDishes = [];
+  let MEAL_NUTRITION = {};
   let allKicks = {};
   let weights = [];
   let dataUpdatedAt = 0;
@@ -720,6 +777,77 @@
   const WEEK_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   let weeklyMenu = { breakfast: Object.assign({}, DEFAULT_BREAKFAST_MENU), lunch:{}, dinner:{} };
 
+  function parseProteinGrams(value){
+    const nums=String(value||'').match(/[0-9]+(?:\.[0-9]+)?/g);
+    if(!nums||!nums.length) return null;
+    const values=nums.map(Number).filter(Number.isFinite);
+    return values.length>1 ? Math.round((values[0]+values[1])/2) : Math.round(values[0]);
+  }
+  function mealDetails(item){
+    let name=item.text, fallback=null, portion=item.portion||'';
+    if(item.id==='meal-breakfast'||item.id==='m4'){
+      name=(weeklyMenu.breakfast&&weeklyMenu.breakfast[todayAbbr()])||name;
+      fallback=parseProteinGrams(BREAKFAST_PROTEIN[name])||20; portion=portion||'planned portion';
+    }else if(item.id==='meal-lunch'||item.id==='d1'){
+      name=(weeklyMenu.lunch&&weeklyMenu.lunch[todayAbbr()])||name; fallback=23; portion=portion||'planned plate';
+    }else if(item.id==='meal-dinner'||item.id==='n1'){
+      name=(weeklyMenu.dinner&&weeklyMenu.dinner[todayAbbr()])||name; fallback=28; portion=portion||'planned plate';
+    }else if(item.id==='meal-snacks'||item.id==='e1'){
+      fallback=9; portion=portion||'planned serving';
+    }
+    const supplied=MEAL_NUTRITION[name]||{};
+    return {name,portion:supplied.portion||portion||'supplied portion',grams:Number(supplied.proteinGrams)||Number(item.proteinGrams)||parseProteinGrams(item.protein)||fallback,isEstimate:!supplied.proteinGrams&&!item.proteinGrams};
+  }
+
+  function renderDailyTrackers(){
+    const medicines=CHECKLIST.filter(item=>item.cat==='med');
+    const medicineStrip=document.getElementById('medicineStrip');
+    document.getElementById('medicineTracker').hidden=!medicines.length;
+    medicineStrip.innerHTML='';
+    medicines.forEach(item=>{
+      const label=document.createElement('label'); label.className='tracker-check';
+      label.innerHTML='<input type="checkbox" '+(checklistState[item.id]?'checked':'')+'><strong>'+escapeHtml(item.sub||'Any time')+'</strong><span>'+escapeHtml(item.text)+'</span>';
+      label.querySelector('input').addEventListener('change',e=>{checklistState[item.id]=e.target.checked;renderDailyTrackers();updateProgress();saveData();renderHistory();});
+      medicineStrip.appendChild(label);
+    });
+    document.getElementById('medicineTotal').textContent=medicines.filter(item=>checklistState[item.id]).length+' / '+medicines.length+' done';
+
+    const hydrationStrip=document.getElementById('hydrationStrip'); hydrationStrip.innerHTML='';
+    for(let i=1;i<=4;i++){
+      const id='tracker-water-'+i; const label=document.createElement('label'); label.className='tracker-check';
+      label.innerHTML='<input type="checkbox" '+(checklistState[id]?'checked':'')+'><strong>1 L</strong>';
+      label.querySelector('input').addEventListener('change',e=>{checklistState[id]=e.target.checked;checklistState['hydration-target']=[1,2,3,4].every(n=>checklistState['tracker-water-'+n]);renderDailyTrackers();updateProgress();saveData();renderHistory();});
+      hydrationStrip.appendChild(label);
+    }
+    const litres=[1,2,3,4].filter(n=>checklistState['tracker-water-'+n]).length;
+    document.getElementById('hydrationTotal').textContent=litres+' L';
+
+    function renderWalkSegment(id,key){
+      const host=document.getElementById(id); host.innerHTML=''; const current=Number(checklistState[key])||0;
+      [0,1,2,3].forEach(km=>{const button=document.createElement('button');button.type='button';button.dataset.km=String(km);button.textContent=km+' km';button.classList.toggle('selected',current===km);button.addEventListener('click',()=>{checklistState[key]=km;checklistState['activity-walk']=(Number(checklistState.__walkMorning)||0)+(Number(checklistState.__walkEvening)||0)>0;renderDailyTrackers();updateProgress();saveData();renderHistory();});host.appendChild(button);});
+    }
+    renderWalkSegment('walkMorning','__walkMorning'); renderWalkSegment('walkEvening','__walkEvening');
+    document.getElementById('walkTotal').textContent=((Number(checklistState.__walkMorning)||0)+(Number(checklistState.__walkEvening)||0))+' km today';
+    const details=(activePersonalConfig&&(activePersonalConfig.details||activePersonalConfig.context))||{};
+    const hasWalk=CHECKLIST.some(item=>item.id==='activity-walk')||details.walkCleared==='Yes'||!activePersonalConfig;
+    document.querySelector('#activityTracker .walk-grid').hidden=!hasWalk;
+    const yoga=document.getElementById('yogaDone'); yoga.checked=!!checklistState['activity-yoga'];
+    yoga.onchange=()=>{checklistState['activity-yoga']=yoga.checked;updateProgress();saveData();renderHistory();};
+    document.getElementById('yogaTracker').hidden=!(CHECKLIST.some(item=>item.id==='activity-yoga')||details.yogaCleared==='Yes'||!activePersonalConfig);
+
+    const proteinItems=CHECKLIST.filter(item=>item.cat==='diet'&&(item.protein||item.proteinGrams||/^meal-/.test(item.id)||['m4','d1','e1','n1','n6'].includes(item.id)));
+    const proteinRows=document.getElementById('proteinRows'); proteinRows.innerHTML=''; let totalProtein=0;
+    proteinItems.forEach(item=>{
+      const meal=mealDetails(item); if(checklistState[item.id]&&meal.grams) totalProtein+=meal.grams;
+      const row=document.createElement('label'); row.className='protein-row';
+      row.innerHTML='<input type="checkbox" '+(checklistState[item.id]?'checked':'')+'><span><span class="protein-name">'+escapeHtml(meal.name)+'</span><br><span class="protein-meta">'+escapeHtml(meal.portion)+' · '+(meal.grams?meal.grams+' g protein'+(meal.isEstimate?' estimated':''):'protein not supplied')+'</span></span><strong>'+(meal.grams?meal.grams+' g':'—')+'</strong>';
+      row.querySelector('input').addEventListener('change',e=>{checklistState[item.id]=e.target.checked;renderDailyTrackers();updateProgress();saveData();renderHistory();}); proteinRows.appendChild(row);
+    });
+    document.getElementById('proteinTracker').hidden=!proteinItems.length;
+    const target=activePersonalConfig&&activePersonalConfig.profile&&activePersonalConfig.profile.proteinTarget;
+    document.getElementById('proteinTotal').textContent=totalProtein+' g'+(target?' / '+target:'');
+  }
+
   function dishOptions(mealType){ const m=(mealType==='dinner'?DINNER_DISHES:LUNCH_DISHES).slice(); customDishes.forEach(d=>{ if(!m.includes(d)) m.push(d); }); return m; }
   function breakfastDishOptions(){ const m=BREAKFAST_DISHES.slice(); customBreakfastDishes.forEach(d=>{ if(!m.includes(d)) m.push(d); }); return m; }
 
@@ -728,7 +856,8 @@
     const host = document.getElementById('checklistHost');
     host.innerHTML = '';
     let blockSeen = {};
-    CHECKLIST.forEach(item=>{
+    const specialIds=new Set(['hydration-target','activity-walk','activity-yoga','meal-breakfast','meal-lunch','meal-dinner','meal-snacks','m4','d1','e1','n1','n6']);
+    CHECKLIST.filter(item=>item.cat!=='med'&&!specialIds.has(item.id)).forEach(item=>{
       if(!blockSeen[item.block]){
         blockSeen[item.block] = true;
         const h = document.createElement('div');
@@ -772,7 +901,7 @@
       });
       host.appendChild(row);
     });
-    updateProgress();
+    renderDailyTrackers(); updateProgress();
   }
   function updateProgress(){
     const total = CHECKLIST.length;
@@ -992,14 +1121,15 @@
     const details=(cfg&&(cfg.details||cfg.context))||{};
     const profile=(cfg&&cfg.profile)||{};
     const rows=[
-      ['Care team',details.doctor],
-      ['Conditions or allergies',Array.isArray(details.conditions)?details.conditions.join(', '):details.conditions],
-      ['Care notes',details.conditionsNote],
-      ['Water target',profile.waterTarget],
-      ['Movement method',profile.kickMethod],
-      ['Weight range',details.weightRange],
-      ['Activity guidance',details.activityNote],
-      ['Other supplied notes',details.anythingElse]
+      ['Blood group and Rh',[details.bloodGroup,details.rhFactor].filter(Boolean).join(' ')],
+      ['Known allergies',details.allergies],
+      ['Pregnancy conditions',Array.isArray(details.conditions)?details.conditions.join(', '):details.conditions],
+      ['Doctor-confirmed high-risk status',details.highRiskStatus],
+      ['Clinician restrictions or precautions',details.conditionsNote||details.activityNote],
+      ['Track movement method',profile.kickMethod||details.kickMethod],
+      ['Next ANC appointment',details.nextAncDate?new Date(details.nextAncDate+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):''],
+      ['Protein target',profile.proteinTarget],
+      ['Hydration target',profile.waterTarget]
     ].filter(row=>row[1]);
     const card=document.getElementById('careSummaryCard');
     const grid=document.getElementById('careSummaryGrid');
@@ -1016,10 +1146,22 @@
     const weightSub=document.querySelector('#weightCard .sub');
     if(weightSub && details.weightRange) weightSub.textContent='Plan-supplied healthy range: '+details.weightRange+' Confirm the target with the treating clinician.';
   }
+  function renderDoctor(cfg){
+    const details=(cfg&&(cfg.details||cfg.context))||{};
+    const legacy=details.doctor||'';
+    const rows=[['Doctor',details.doctorName||legacy],['Contact number',details.doctorPhone],['Hospital',details.hospital],['Address',details.hospitalAddress],['Maternity / emergency',details.hospitalEmergency]].filter(row=>row[1]);
+    const card=document.getElementById('doctorCard'); const grid=document.getElementById('doctorGrid'); const actions=document.getElementById('doctorActions');
+    card.hidden=!rows.length; grid.innerHTML=''; actions.innerHTML='';
+    rows.forEach(([key,value])=>{const item=document.createElement('div');item.className='care-item';const k=document.createElement('span');k.className='k';k.textContent=key;const v=document.createElement('span');v.className='v';v.textContent=String(value);item.append(k,v);grid.appendChild(item);});
+    if(details.doctorPhone){const call=document.createElement('a');call.className='btn-primary';call.href='tel:'+String(details.doctorPhone).replace(/[^+0-9]/g,'');call.textContent='Call doctor';actions.appendChild(call);}
+    if(details.hospitalEmergency){const emergency=document.createElement('a');emergency.className='btn-ghost';emergency.href='tel:'+String(details.hospitalEmergency).replace(/[^+0-9]/g,'');emergency.textContent='Call maternity';actions.appendChild(emergency);}
+    if(details.hospitalAddress){const map=document.createElement('a');map.className='btn-ghost';map.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(details.hospitalAddress);map.target='_blank';map.rel='noopener';map.textContent='Open map';actions.appendChild(map);}
+  }
   function applyPersonalConfig(raw){
     if(!raw){
       document.getElementById('setupCard').hidden=false;
       document.getElementById('careSummaryCard').hidden=true;
+      document.getElementById('doctorCard').hidden=true;
       setPersonalAppName('Pregnancy Dashboard');
       fillList('doList',DOS); fillList('dontList',DONTS); renderHero(); return;
     }
@@ -1033,6 +1175,16 @@
     if(cfg.profile.proteinTarget){ protein.hidden=false; protein.innerHTML='Daily protein target supplied in the plan: <strong>'+escapeHtml(cfg.profile.proteinTarget)+'</strong>.'; }
     else protein.hidden=true;
     CHECKLIST=cfg.dailyPlan.slice();
+    const mealOptions=cfg.mealOptions||{};
+    const legacyMealRows=[
+      ['meal-breakfast','Breakfast',mealOptions.breakfast],
+      ['meal-lunch','Lunch',mealOptions.lunch],
+      ['meal-dinner','Dinner',mealOptions.dinner],
+      ['meal-snacks','Snacks',mealOptions.snacks]
+    ];
+    legacyMealRows.forEach(([id,label,options])=>{if(Array.isArray(options)&&options.length&&!CHECKLIST.some(item=>item.id===id))CHECKLIST.push({id,block:'Meals',sub:label,cat:'diet',text:label,note:''});});
+    if(!CHECKLIST.some(item=>/^meal-/.test(item.id)||['m4','d1','e1','n1','n6'].includes(item.id))) CHECKLIST=CHECKLIST.concat(BASELINE_MEAL_ITEMS.map(item=>Object.assign({},item)));
+    MEAL_NUTRITION=(cfg.mealNutrition&&typeof cfg.mealNutrition==='object')?cfg.mealNutrition:{};
     DOS=mergeGuidance(REQUIRED_DOS,cfg.dos);
     DONTS=mergeGuidance(REQUIRED_DONTS,cfg.donts);
     SEED_QUESTIONS=(Array.isArray(cfg.questions)?cfg.questions:[]).map((text,i)=>({id:'seed-'+i,text,asked:false}));
@@ -1045,7 +1197,7 @@
     if(cfg.weeklyMenu&&cfg.weeklyMenu.breakfast) DEFAULT_BREAKFAST_MENU=Object.assign({},cfg.weeklyMenu.breakfast);
     else if(cfg.mealOptions&&cfg.mealOptions.breakfastRotation) DEFAULT_BREAKFAST_MENU=Object.assign({},cfg.mealOptions.breakfastRotation);
     else if(BREAKFAST_DISHES.length) DEFAULT_BREAKFAST_MENU=Object.fromEntries(WEEK_DAYS.map((day,i)=>[day,BREAKFAST_DISHES[i%BREAKFAST_DISHES.length]]));
-    renderCareSummary(cfg);
+    renderDoctor(cfg); renderCareSummary(cfg);
     fillList('doList',DOS); fillList('dontList',DONTS); renderHero();
   }
 
@@ -1413,6 +1565,13 @@
     if(!resp.ok) throw new Error('Remote deletion failed');
     await clearLocalOnly();
   }
+  const settingsOverlay=document.getElementById('settingsOverlay');
+  function openSettings(){settingsOverlay.classList.add('show');document.body.style.overflow='hidden';document.getElementById('settingsClose').focus();}
+  function closeSettings(){settingsOverlay.classList.remove('show');document.body.style.overflow='';document.getElementById('settingsBtn').focus();}
+  document.getElementById('settingsBtn').addEventListener('click',openSettings);
+  document.getElementById('settingsClose').addEventListener('click',closeSettings);
+  settingsOverlay.addEventListener('click',e=>{if(e.target===settingsOverlay)closeSettings();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&settingsOverlay.classList.contains('show'))closeSettings();});
   document.getElementById('backupBtn').addEventListener('click',()=>makeBackup().catch(e=>alert('Backup failed: '+e.message)));
   document.getElementById('setupImportBtn').addEventListener('click',()=>document.getElementById('configFile').click());
   document.getElementById('configImportBtn').addEventListener('click',()=>document.getElementById('configFile').click());
@@ -1423,7 +1582,7 @@
       const cfg=validatePersonalConfig(JSON.parse(await file.text()));
       await PregnancyAppCore.set(PregnancyAppCore.keys.CONFIG_KEY,cfg);
       const next=new URL(location.href);
-      next.searchParams.set('release','3');
+      next.searchParams.set('release','5');
       next.searchParams.set('setup',String(Date.now()));
       location.replace(next.href);
     }catch(err){ alert('Setup import failed: '+err.message); }

@@ -59,7 +59,7 @@
   .field .hint{font-size:12px; color:var(--ink-faint); margin-bottom:8px; line-height:1.5;}
   .field .opt-tag{font-weight:500; color:var(--ink-faint); font-size:11.5px; text-transform:none; letter-spacing:0;}
 
-  input[type=text], input[type=number], input[type=date], textarea, select{
+  input[type=text], input[type=tel], input[type=number], input[type=date], textarea, select{
     width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:10px;
     font-family:inherit; font-size:14px; background:#fff; color:var(--ink);
   }
@@ -176,10 +176,17 @@
         <input type="date" name="lmp">
       </div>
 
-      <div class="field">
-        <label class="q">Doctor / hospital name <span class="opt-tag">(optional)</span></label>
-        <input type="text" name="doctor" placeholder="e.g. Dr. Sharma, Cloudnine Hospital">
-      </div>
+      <div class="field"><label class="q">Obstetrician's name <span class="opt-tag">(optional)</span></label><input type="text" name="doctorName" placeholder="e.g. Dr. Sharma"></div>
+      <div class="field"><label class="q">Doctor's contact number <span class="opt-tag">(optional)</span></label><input type="tel" name="doctorPhone" placeholder="Phone number"></div>
+      <div class="field"><label class="q">Hospital name <span class="opt-tag">(optional)</span></label><input type="text" name="hospital" placeholder="Hospital or maternity centre"></div>
+      <div class="field"><label class="q">Hospital address <span class="opt-tag">(optional)</span></label><textarea name="hospitalAddress" placeholder="Full address"></textarea></div>
+      <div class="field"><label class="q">Maternity or emergency number <span class="opt-tag">(optional)</span></label><input type="tel" name="hospitalEmergency" placeholder="24-hour number, if supplied"></div>
+
+      <div class="field"><label class="q">Blood group <span class="opt-tag">(optional)</span></label><select name="bloodGroup"><option value="">Not supplied</option><option>A</option><option>B</option><option>AB</option><option>O</option></select></div>
+      <div class="field"><label class="q">Rh factor <span class="opt-tag">(optional)</span></label><select name="rhFactor"><option value="">Not supplied</option><option>Positive</option><option>Negative</option></select></div>
+      <div class="field"><label class="q">Doctor-confirmed high-risk status</label><select name="highRiskStatus"><option value="">Not supplied</option><option>Yes</option><option>No</option></select></div>
+      <div class="field"><label class="q">Known allergies <span class="opt-tag">(optional)</span></label><textarea name="allergies" placeholder="Medicine, food, latex or other confirmed allergies"></textarea></div>
+      <div class="field"><label class="q">Next ANC appointment <span class="opt-tag">(optional)</span></label><input type="date" name="nextAncDate"></div>
 
       <div class="field">
         <label class="q">Any diagnosed conditions this pregnancy?</label>
@@ -195,8 +202,8 @@
       </div>
 
       <div class="field">
-        <label class="q">Anything else about the conditions above, or known allergies <span class="opt-tag">(optional)</span></label>
-        <textarea name="conditionsNote" placeholder="e.g. borderline gestational diabetes since week 24, monitoring sugar twice daily"></textarea>
+        <label class="q">Doctor-confirmed restrictions or precautions <span class="opt-tag">(optional)</span></label>
+        <textarea name="conditionsNote" placeholder="e.g. monitoring sugar twice daily; avoid strenuous activity"></textarea>
       </div>
     </div>
 
@@ -234,20 +241,20 @@
 
       <div class="conditional" id="mealPlanFields">
         <div class="field">
-          <label class="q">Breakfast options <span class="opt-tag">(one per line — these rotate through the week)</span></label>
-          <textarea name="breakfastOptions" placeholder="2 moong chillas + 1 boiled egg&#10;Vegetable oats with milk + 2 eggs"></textarea>
+          <label class="q">Breakfast options <span class="opt-tag">(dish | portion | protein grams)</span></label>
+          <textarea name="breakfastOptions" placeholder="2 moong chillas + 1 boiled egg | 1 plate | 20&#10;Vegetable oats with milk + 2 eggs | 1 bowl | 22"></textarea>
         </div>
         <div class="field">
-          <label class="q">Lunch — main dish options <span class="opt-tag">(one per line)</span></label>
-          <textarea name="lunchOptions" placeholder="Dal + roti + sabzi&#10;Rajma chawal"></textarea>
+          <label class="q">Lunch options <span class="opt-tag">(dish | portion | protein grams)</span></label>
+          <textarea name="lunchOptions" placeholder="Dal + 2 rotis + sabzi | 1 plate | 23&#10;Rajma chawal | 1 plate | 20"></textarea>
         </div>
         <div class="field">
-          <label class="q">Dinner — main dish options <span class="opt-tag">(one per line)</span></label>
-          <textarea name="dinnerOptions" placeholder="Paneer sabzi + roti&#10;Khichdi + curd"></textarea>
+          <label class="q">Dinner options <span class="opt-tag">(dish | portion | protein grams)</span></label>
+          <textarea name="dinnerOptions" placeholder="Paneer sabzi + 2 rotis | 1 plate | 26&#10;Khichdi + curd | 1 bowl | 18"></textarea>
         </div>
         <div class="field">
-          <label class="q">Snacks <span class="opt-tag">(optional, one per line)</span></label>
-          <textarea name="snackOptions" placeholder="Roasted makhana&#10;Sprouts chaat"></textarea>
+          <label class="q">Snacks <span class="opt-tag">(dish | portion | protein grams)</span></label>
+          <textarea name="snackOptions" placeholder="Roasted chana | 1 small bowl | 9&#10;Sprouts chaat | 1 bowl | 8"></textarea>
         </div>
       </div>
 
@@ -444,7 +451,7 @@
 
   // ---------- progress ----------
   function updateProgress(){
-    const fields = Array.from(form.querySelectorAll('input[type=text], input[type=number], input[type=date], textarea'));
+    const fields = Array.from(form.querySelectorAll('input[type=text], input[type=tel], input[type=number], input[type=date], textarea, select'));
     const filledPlain = fields.filter(f => f.value && f.value.trim() !== '').length;
     const radiosByName = {};
     form.querySelectorAll('input[type=radio]').forEach(r=>{ radiosByName[r.name] = radiosByName[r.name] || (r.checked); if(r.checked) radiosByName[r.name]=true; });
@@ -474,6 +481,13 @@
   function getChecks(name){ return Array.from(form.querySelectorAll('input[name="'+name+'"]:checked')).map(i=>i.value); }
   function val(name){ const el = form.querySelector('[name="'+name+'"]'); return el ? el.value.trim() : ''; }
   function lines(text){ return text.split('\n').map(s=>s.trim()).filter(Boolean); }
+  function parseMealLines(text){
+    return lines(text).map(line=>{
+      const parts=line.split('|').map(s=>s.trim());
+      const grams=parts[2] ? Number(parts[2].replace(/[^0-9.]/g,'')) : null;
+      return {name:parts[0],portion:parts[1]||'1 serving',proteinGrams:Number.isFinite(grams)&&grams>0?grams:null};
+    }).filter(item=>item.name);
+  }
   function getMedicines(){
     return Array.from(document.querySelectorAll('#medRows .repeat-row')).map(row=>({
       name:row.querySelector('.med-name').value.trim(),
@@ -524,9 +538,17 @@
     out.push('2) DATES & CARE');
     out.push('EDD: ' + (val('edd') ? fmtDate(val('edd')) : '—'));
     out.push('LMP (if EDD unknown): ' + (val('lmp') ? fmtDate(val('lmp')) : '—'));
-    out.push('Doctor / hospital: ' + (val('doctor') || '—'));
+    out.push('Doctor: ' + (val('doctorName') || '—'));
+    out.push('Doctor contact: ' + (val('doctorPhone') || '—'));
+    out.push('Hospital: ' + (val('hospital') || '—'));
+    out.push('Hospital address: ' + (val('hospitalAddress') || '—'));
+    out.push('Maternity / emergency number: ' + (val('hospitalEmergency') || '—'));
+    out.push('Blood group / Rh: ' + ([val('bloodGroup'),val('rhFactor')].filter(Boolean).join(' ') || '—'));
+    out.push('Doctor-confirmed high-risk status: ' + (val('highRiskStatus') || '—'));
+    out.push('Known allergies: ' + (val('allergies') || '—'));
+    out.push('Next ANC appointment: ' + (val('nextAncDate') ? fmtDate(val('nextAncDate')) : '—'));
     out.push('Diagnosed conditions: ' + (getChecks('conditions').join(', ') || '—'));
-    out.push('Conditions notes / allergies: ' + (val('conditionsNote') || '—'));
+    out.push('Restrictions / precautions: ' + (val('conditionsNote') || '—'));
     out.push('');
     out.push('3) MEDICINES');
     if(meds.length){ meds.forEach(m=> out.push('- ' + [m.name||'(unnamed)', m.dose, m.time].filter(Boolean).join(' · '))); }
@@ -605,10 +627,15 @@
   function buildAppConfig(){
     const meds=getMedicines().filter(m=>m.name||m.dose||m.time);
     const qs=getQuestions().filter(Boolean);
-    const breakfast=lines(val('breakfastOptions'));
-    const lunch=lines(val('lunchOptions'));
-    const dinner=lines(val('dinnerOptions'));
-    const snacks=lines(val('snackOptions'));
+    const breakfastItems=parseMealLines(val('breakfastOptions'));
+    const lunchItems=parseMealLines(val('lunchOptions'));
+    const dinnerItems=parseMealLines(val('dinnerOptions'));
+    const snackItems=parseMealLines(val('snackOptions'));
+    const breakfast=breakfastItems.map(x=>x.name);
+    const lunch=lunchItems.map(x=>x.name);
+    const dinner=dinnerItems.map(x=>x.name);
+    const snacks=snackItems.map(x=>x.name);
+    const mealNutrition=Object.fromEntries(breakfastItems.concat(lunchItems,dinnerItems,snackItems).map(x=>[x.name,{portion:x.portion,proteinGrams:x.proteinGrams}]));
     const foodRestrictions=lines(val('foodAvoid'));
     const customItems=lines(val('customDos'));
     const suppliedEdd=val('edd');
@@ -619,10 +646,10 @@
       id:'medicine-'+(i+1), block:'Medicines', sub:m.time||'', cat:'med',
       text:[m.name,m.dose].filter(Boolean).join(' · '), note:val('medRules')||''
     }));
-    if(breakfast.length) dailyPlan.push({id:'meal-breakfast',block:'Meals',sub:'Breakfast',cat:'diet',text:'Choose from the supplied breakfast plan',note:breakfast.join(' | ')});
-    if(lunch.length) dailyPlan.push({id:'meal-lunch',block:'Meals',sub:'Lunch',cat:'diet',text:'Choose from the supplied lunch plan',note:lunch.join(' | ')});
-    if(dinner.length) dailyPlan.push({id:'meal-dinner',block:'Meals',sub:'Dinner',cat:'diet',text:'Choose from the supplied dinner plan',note:dinner.join(' | ')});
-    if(snacks.length) dailyPlan.push({id:'meal-snacks',block:'Meals',sub:'Snacks',cat:'diet',text:'Choose from the supplied snack plan',note:snacks.join(' | ')});
+    if(breakfast.length) dailyPlan.push({id:'meal-breakfast',block:'Meals',sub:'Breakfast',cat:'diet',text:'Breakfast',note:''});
+    if(lunch.length) dailyPlan.push({id:'meal-lunch',block:'Meals',sub:'Lunch',cat:'diet',text:'Lunch',note:''});
+    if(dinner.length) dailyPlan.push({id:'meal-dinner',block:'Meals',sub:'Dinner',cat:'diet',text:'Dinner',note:''});
+    if(snacks.length) dailyPlan.push({id:'meal-snacks',block:'Meals',sub:'Snacks',cat:'diet',text:'Snacks',note:''});
     if(val('waterTarget')) dailyPlan.push({id:'hydration-target',block:'Hydration',sub:'Supplied target',cat:'diet',text:'Track water toward the supplied daily target: '+val('waterTarget'),note:'Use the target supplied in this questionnaire; confirm changes with the treating clinician.'});
     if(foodRestrictions.length) dailyPlan.push({id:'food-restrictions',block:'Meals',sub:'Restrictions supplied',cat:'diet',text:'Follow the food restrictions recorded in this setup',note:foodRestrictions.join(' | ')});
     if(getRadio('walkCleared')==='Yes') dailyPlan.push({id:'activity-walk',block:'Activity',cat:'activity',text:'Walking cleared by the treating clinician',note:val('activityNote')||''});
@@ -652,11 +679,21 @@
         breakfastRotation:buildBreakfastRotation(breakfast),
         lunchDinner:lunch.concat(dinner)
       },
+      mealNutrition,
       startingWeight:val('startWeight') ? Number(val('startWeight')) : null,
       context:{
         filledBy:getRadio('filledBy'),
         contact:val('contact'),
-        doctor:val('doctor'),
+        doctorName:val('doctorName'),
+        doctorPhone:val('doctorPhone'),
+        hospital:val('hospital'),
+        hospitalAddress:val('hospitalAddress'),
+        hospitalEmergency:val('hospitalEmergency'),
+        bloodGroup:val('bloodGroup'),
+        rhFactor:val('rhFactor'),
+        highRiskStatus:val('highRiskStatus'),
+        allergies:val('allergies'),
+        nextAncDate:val('nextAncDate'),
         conditions:getChecks('conditions'),
         conditionsNote:val('conditionsNote'),
         medicineTimingRules:val('medRules'),
@@ -689,7 +726,7 @@
       const data = {
         values: {}, radios: {}, checks: {}, meds: [], qs: []
       };
-      form.querySelectorAll('input[type=text], input[type=number], input[type=date], textarea').forEach(f=>{ data.values[f.name] = f.value; });
+      form.querySelectorAll('input[type=text], input[type=tel], input[type=number], input[type=date], textarea, select').forEach(f=>{ data.values[f.name] = f.value; });
       form.querySelectorAll('input[type=radio]:checked').forEach(r=>{ data.radios[r.name] = r.value; });
       form.querySelectorAll('input[type=checkbox]:checked').forEach(c=>{ data.checks[c.name] = data.checks[c.name]||[]; data.checks[c.name].push(c.value); });
       document.querySelectorAll('#medRows .repeat-row').forEach(row=>{
