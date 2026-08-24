@@ -142,6 +142,7 @@
         <label class="q">Her full name (or the name she goes by)<span class="required-mark">*</span></label>
         <input type="text" name="herName" placeholder="e.g. her first name" required>
       </div>
+      <div class="field"><label class="q">Date of birth <span class="opt-tag">(optional)</span></label><input type="date" name="dateOfBirth"></div>
 
       <div class="field">
         <label class="q">Who's filling this in?</label>
@@ -186,6 +187,12 @@
       <div class="field"><label class="q">Doctor-confirmed high-risk status</label><select name="highRiskStatus"><option value="">Not supplied</option><option>Yes</option><option>No</option></select></div>
       <div class="field"><label class="q">Known allergies <span class="opt-tag">(optional)</span></label><textarea name="allergies" placeholder="Medicine, food, latex or other confirmed allergies"></textarea></div>
       <div class="field"><label class="q">Next ANC appointment <span class="opt-tag">(optional)</span></label><input type="date" name="nextAncDate"></div>
+
+      <div class="field"><label class="q">Total pregnancies including this one <span class="opt-tag">(optional)</span></label><input type="number" min="1" max="20" name="gravida" placeholder="e.g. 2"></div>
+      <div class="field"><label class="q">Previous births <span class="opt-tag">(optional)</span></label><input type="number" min="0" max="20" name="priorBirths" placeholder="e.g. 1"></div>
+      <div class="field"><label class="q">Previous miscarriages or pregnancy losses <span class="opt-tag">(optional)</span></label><input type="number" min="0" max="20" name="miscarriages" placeholder="e.g. 0"></div>
+      <div class="field"><label class="q">Previous C-section <span class="opt-tag">(optional)</span></label><select name="previousCSection"><option value="">Not supplied</option><option>Yes</option><option>No</option></select></div>
+      <div class="field"><label class="q">Previous pregnancy complications <span class="opt-tag">(optional)</span></label><textarea name="previousComplications" placeholder="Only doctor-confirmed complications"></textarea></div>
 
       <div class="field">
         <label class="q">Any diagnosed conditions this pregnancy?</label>
@@ -531,6 +538,7 @@
     out.push('');
     out.push('1) ABOUT HER');
     out.push('Name: ' + (val('herName') || '—'));
+    out.push('Date of birth: ' + (val('dateOfBirth') ? fmtDate(val('dateOfBirth')) : '—'));
     out.push('Filled in by: ' + (getRadio('filledBy') || '—'));
     out.push('Contact: ' + (val('contact') || '—'));
     out.push('');
@@ -546,6 +554,11 @@
     out.push('Doctor-confirmed high-risk status: ' + (val('highRiskStatus') || '—'));
     out.push('Known allergies: ' + (val('allergies') || '—'));
     out.push('Next ANC appointment: ' + (val('nextAncDate') ? fmtDate(val('nextAncDate')) : '—'));
+    out.push('Total pregnancies including this one: ' + (val('gravida') || '—'));
+    out.push('Previous births: ' + (val('priorBirths') || '—'));
+    out.push('Previous miscarriages / losses: ' + (val('miscarriages') || '—'));
+    out.push('Previous C-section: ' + (val('previousCSection') || '—'));
+    out.push('Previous pregnancy complications: ' + (val('previousComplications') || '—'));
     out.push('Diagnosed conditions: ' + (getChecks('conditions').join(', ') || '—'));
     out.push('Restrictions / precautions: ' + (val('conditionsNote') || '—'));
     out.push('');
@@ -683,6 +696,7 @@
       context:{
         filledBy:getRadio('filledBy'),
         contact:val('contact'),
+        dateOfBirth:val('dateOfBirth'),
         doctorName:val('doctorName'),
         doctorPhone:val('doctorPhone'),
         hospital:val('hospital'),
@@ -693,6 +707,11 @@
         highRiskStatus:val('highRiskStatus'),
         allergies:val('allergies'),
         nextAncDate:val('nextAncDate'),
+        gravida:val('gravida'),
+        priorBirths:val('priorBirths'),
+        miscarriages:val('miscarriages'),
+        previousCSection:val('previousCSection'),
+        previousComplications:val('previousComplications'),
         conditions:getChecks('conditions'),
         conditionsNote:val('conditionsNote'),
         medicineTimingRules:val('medRules'),
