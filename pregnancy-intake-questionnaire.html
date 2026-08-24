@@ -182,8 +182,7 @@
       <div class="field"><label class="q">Hospital address <span class="opt-tag">(optional)</span></label><textarea name="hospitalAddress" placeholder="Full address"></textarea></div>
       <div class="field"><label class="q">Maternity or emergency number <span class="opt-tag">(optional)</span></label><input type="tel" name="hospitalEmergency" placeholder="24-hour number, if supplied"></div>
 
-      <div class="field"><label class="q">Blood group <span class="opt-tag">(optional)</span></label><select name="bloodGroup"><option value="">Not supplied</option><option>A</option><option>B</option><option>AB</option><option>O</option></select></div>
-      <div class="field"><label class="q">Rh factor <span class="opt-tag">(optional)</span></label><select name="rhFactor"><option value="">Not supplied</option><option>Positive</option><option>Negative</option></select></div>
+      <div class="field"><label class="q">Blood group <span class="opt-tag">(optional)</span></label><select name="bloodGroup"><option value="">Not supplied</option><option value="A Positive">A+</option><option value="A Negative">A−</option><option value="B Positive">B+</option><option value="B Negative">B−</option><option value="AB Positive">AB+</option><option value="AB Negative">AB−</option><option value="O Positive">O+</option><option value="O Negative">O−</option></select></div>
       <div class="field"><label class="q">Doctor-confirmed high-risk status</label><select name="highRiskStatus"><option value="">Not supplied</option><option>Yes</option><option>No</option></select></div>
       <div class="field"><label class="q">Known allergies <span class="opt-tag">(optional)</span></label><textarea name="allergies" placeholder="Medicine, food, latex or other confirmed allergies"></textarea></div>
       <div class="field"><label class="q">Next ANC appointment <span class="opt-tag">(optional)</span></label><input type="date" name="nextAncDate"></div>
@@ -543,7 +542,7 @@
     out.push('Hospital: ' + (val('hospital') || '—'));
     out.push('Hospital address: ' + (val('hospitalAddress') || '—'));
     out.push('Maternity / emergency number: ' + (val('hospitalEmergency') || '—'));
-    out.push('Blood group / Rh: ' + ([val('bloodGroup'),val('rhFactor')].filter(Boolean).join(' ') || '—'));
+    out.push('Blood group / Rh: ' + (val('bloodGroup') || '—'));
     out.push('Doctor-confirmed high-risk status: ' + (val('highRiskStatus') || '—'));
     out.push('Known allergies: ' + (val('allergies') || '—'));
     out.push('Next ANC appointment: ' + (val('nextAncDate') ? fmtDate(val('nextAncDate')) : '—'));
@@ -690,7 +689,7 @@
         hospitalAddress:val('hospitalAddress'),
         hospitalEmergency:val('hospitalEmergency'),
         bloodGroup:val('bloodGroup'),
-        rhFactor:val('rhFactor'),
+        rhFactor:'',
         highRiskStatus:val('highRiskStatus'),
         allergies:val('allergies'),
         nextAncDate:val('nextAncDate'),
