@@ -1,8 +1,11 @@
 {
-  "version": 1,
+  "version": 2,
+  "createdAt": "2026-08-24T00:00:00.000Z",
   "profile": {
-    "displayName": "Pregnancy Dashboard",
-    "expectedDate": "",
+    "displayName": "Example Pregnancy Dashboard",
+    "expectedDate": "2027-12-31",
+    "waterTarget": "",
+    "kickMethod": "",
     "medicalDisclaimer": "This dashboard organises information supplied by you. It is not medical advice. Confirm medicines, diet, movement targets and symptoms with the treating clinician."
   },
   "dailyPlan": [],
@@ -11,6 +14,11 @@
   "questions": [],
   "mealOptions": {
     "breakfast": [],
-    "lunchDinner": []
-  }
+    "lunch": [],
+    "dinner": [],
+    "snacks": []
+  },
+  "weeklyMenu": { "breakfast": {} },
+  "details": {},
+  "startingWeight": null
 }

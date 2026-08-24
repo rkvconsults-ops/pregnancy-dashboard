@@ -474,6 +474,33 @@
   function getChecks(name){ return Array.from(form.querySelectorAll('input[name="'+name+'"]:checked')).map(i=>i.value); }
   function val(name){ const el = form.querySelector('[name="'+name+'"]'); return el ? el.value.trim() : ''; }
   function lines(text){ return text.split('\n').map(s=>s.trim()).filter(Boolean); }
+  function getMedicines(){
+    return Array.from(document.querySelectorAll('#medRows .repeat-row')).map(row=>({
+      name:row.querySelector('.med-name').value.trim(),
+      dose:row.querySelector('.med-dose').value.trim(),
+      time:row.querySelector('.med-time').value.trim()
+    }));
+  }
+  function getQuestions(){
+    return Array.from(document.querySelectorAll('#qRows .q-text')).map(input=>input.value.trim());
+  }
+
+  function addDaysToDate(dateText, days){
+    if(!dateText) return '';
+    const date = new Date(dateText+'T00:00:00Z');
+    if(isNaN(date.getTime())) return '';
+    date.setUTCDate(date.getUTCDate()+days);
+    return date.toISOString().slice(0,10);
+  }
+
+  function buildBreakfastRotation(options){
+    const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+    if(!options.length) return {};
+    return days.reduce((rotation,day,index)=>{
+      rotation[day]=options[index % options.length];
+      return rotation;
+    },{});
+  }
 
   function buildSummary(){
     const meds = Array.from(document.querySelectorAll('#medRows .repeat-row')).map(row=>{
@@ -578,35 +605,77 @@
   function buildAppConfig(){
     const meds=getMedicines().filter(m=>m.name||m.dose||m.time);
     const qs=getQuestions().filter(Boolean);
+    const breakfast=lines(val('breakfastOptions'));
+    const lunch=lines(val('lunchOptions'));
+    const dinner=lines(val('dinnerOptions'));
+    const snacks=lines(val('snackOptions'));
+    const foodRestrictions=lines(val('foodAvoid'));
+    const customItems=lines(val('customDos'));
+    const suppliedEdd=val('edd');
+    const lmp=val('lmp');
+    const expectedDate=suppliedEdd || addDaysToDate(lmp,280);
+    const expectedDateSource=suppliedEdd ? 'supplied EDD' : (expectedDate ? 'estimated from LMP + 280 days' : 'not supplied');
     const dailyPlan=meds.map((m,i)=>({
       id:'medicine-'+(i+1), block:'Medicines', sub:m.time||'', cat:'med',
       text:[m.name,m.dose].filter(Boolean).join(' · '), note:val('medRules')||''
     }));
+    if(breakfast.length) dailyPlan.push({id:'meal-breakfast',block:'Meals',sub:'Breakfast',cat:'diet',text:'Choose from the supplied breakfast plan',note:breakfast.join(' | ')});
+    if(lunch.length) dailyPlan.push({id:'meal-lunch',block:'Meals',sub:'Lunch',cat:'diet',text:'Choose from the supplied lunch plan',note:lunch.join(' | ')});
+    if(dinner.length) dailyPlan.push({id:'meal-dinner',block:'Meals',sub:'Dinner',cat:'diet',text:'Choose from the supplied dinner plan',note:dinner.join(' | ')});
+    if(snacks.length) dailyPlan.push({id:'meal-snacks',block:'Meals',sub:'Snacks',cat:'diet',text:'Choose from the supplied snack plan',note:snacks.join(' | ')});
+    if(val('waterTarget')) dailyPlan.push({id:'hydration-target',block:'Hydration',sub:'Supplied target',cat:'diet',text:'Track water toward the supplied daily target: '+val('waterTarget'),note:'Use the target supplied in this questionnaire; confirm changes with the treating clinician.'});
+    if(foodRestrictions.length) dailyPlan.push({id:'food-restrictions',block:'Meals',sub:'Restrictions supplied',cat:'diet',text:'Follow the food restrictions recorded in this setup',note:foodRestrictions.join(' | ')});
     if(getRadio('walkCleared')==='Yes') dailyPlan.push({id:'activity-walk',block:'Activity',cat:'activity',text:'Walking cleared by the treating clinician',note:val('activityNote')||''});
     if(getRadio('yogaCleared')==='Yes') dailyPlan.push({id:'activity-yoga',block:'Activity',cat:'activity',text:'Yoga or exercise cleared by the treating clinician',note:val('activityNote')||''});
-    const avoid=lines(val('foodAvoid'));
-    const extra=lines(val('customDos'));
     return {
-      version:1,
+      version:2,
       createdAt:new Date().toISOString(),
       profile:{
-        displayName:val('herName') ? val('herName')+' Pregnancy Dashboard' : 'Pregnancy Dashboard',
-        expectedDate:val('edd'),
+        displayName:val('herName') ? val('herName')+'\'s Pregnancy Dashboard' : 'Pregnancy Dashboard',
+        expectedDate,
+        expectedDateSource,
+        expectedDateIsEstimate:!suppliedEdd && !!expectedDate,
+        lastMenstrualPeriod:lmp,
         proteinTarget:val('proteinTarget'), waterTarget:val('waterTarget'),
         kickMethod:getRadio('hasKickMethod')==='Yes' ? val('kickMethod') : '',
         medicalDisclaimer:'This dashboard organises information supplied by you. It is not medical advice. Confirm medicines, diet, movement targets and symptoms with the treating clinician.'
       },
       dailyPlan,
-      dos:extra.filter(x=>!/^avoid\b|^do not\b|^don.t\b/i.test(x)),
-      donts:avoid.concat(extra.filter(x=>/^avoid\b|^do not\b|^don.t\b/i.test(x))),
+      dos:customItems.filter(x=>!/^avoid\b|^do not\b|^don.t\b/i.test(x)),
+      donts:foodRestrictions.concat(customItems.filter(x=>/^avoid\b|^do not\b|^don.t\b/i.test(x))),
       questions:qs,
-      mealOptions:{breakfast:lines(val('breakfastOptions')),lunchDinner:lines(val('lunchOptions')).concat(lines(val('dinnerOptions')))},
-      startingWeight:val('startWeight') ? Number(val('startWeight')) : null
+      mealOptions:{
+        breakfast,
+        lunch,
+        dinner,
+        snacks,
+        breakfastRotation:buildBreakfastRotation(breakfast),
+        lunchDinner:lunch.concat(dinner)
+      },
+      startingWeight:val('startWeight') ? Number(val('startWeight')) : null,
+      context:{
+        filledBy:getRadio('filledBy'),
+        contact:val('contact'),
+        doctor:val('doctor'),
+        conditions:getChecks('conditions'),
+        conditionsNote:val('conditionsNote'),
+        medicineTimingRules:val('medRules'),
+        hasMealPlan:getRadio('hasMealPlan'),
+        walkCleared:getRadio('walkCleared'),
+        yogaCleared:getRadio('yogaCleared'),
+        activityNote:val('activityNote'),
+        hasKickMethod:getRadio('hasKickMethod'),
+        kickMethod:getRadio('hasKickMethod')==='Yes' ? val('kickMethod') : '',
+        weightRange:val('weightRange'),
+        customDos:val('customDos'),
+        anythingElse:val('anythingElse'),
+        submitterName:val('submitterName')
+      }
     };
   }
   document.getElementById('configBtn').addEventListener('click',()=>{
     const config=buildAppConfig();
-    if(!config.profile.expectedDate){ alert('Add the expected delivery date before creating the app setup.'); return; }
+    if(!config.profile.expectedDate){ alert('Add either the expected delivery date or the last menstrual period date before creating the app setup.'); return; }
     const blob=new Blob([JSON.stringify(config,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob); const a=document.createElement('a');
     const slug=(val('herName')||'personal').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');

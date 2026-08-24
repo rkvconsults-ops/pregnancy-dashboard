@@ -370,6 +370,13 @@
   .backup-state{font-size:12px; color:var(--ink-soft); margin-top:9px;}
   .sync-qr{width:210px; max-width:100%; margin:12px 0; padding:10px; background:#fff; border:1px solid var(--line); border-radius:10px;}
   .sync-qr svg{display:block; width:100%; height:auto;}
+  .setup-card{background:linear-gradient(135deg,var(--accent-soft),#fff); border-color:#BFD8D0;}
+  .setup-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px;}
+  .setup-actions a{text-decoration:none;display:inline-flex;align-items:center;}
+  .care-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px;margin-top:12px;}
+  .care-item{background:var(--paper-soft);border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
+  .care-item .k{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);font-weight:700;margin-bottom:4px;}
+  .care-item .v{font-size:13px;color:var(--ink);line-height:1.45;white-space:pre-wrap;}
 
   @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
 </style>
@@ -420,6 +427,21 @@
   </details>
 
   <div class="grid">
+
+    <div class="card col-full setup-card" id="setupCard">
+      <h2>Create a tailored dashboard</h2>
+      <div class="sub">Complete the private questionnaire on this device, download the setup file, then import it here. The person's answers are not uploaded or stored in GitHub.</div>
+      <div class="setup-actions">
+        <a class="btn-primary" href="pregnancy-intake-questionnaire.html">Open private questionnaire</a>
+        <button class="btn-ghost" id="setupImportBtn" type="button">Import completed setup</button>
+      </div>
+    </div>
+
+    <div class="card col-full" id="careSummaryCard" hidden>
+      <h2>Personal plan details</h2>
+      <div class="sub">These details come from the completed questionnaire. They are not medical recommendations from this app.</div>
+      <div class="care-grid" id="careSummaryGrid"></div>
+    </div>
 
     <div class="card col-full" id="todayCard">
       <h2>Today's plan</h2>
@@ -658,12 +680,13 @@
     {id:'q4', text:'What weight gain range is healthy from here to delivery?', asked:false}
   ];
 
-  let LUNCH_DINNER_DISHES = [
+  let LUNCH_DISHES = [
     'Dal + roti + sabzi','Rajma chawal','Chole + roti','Paneer sabzi + roti','Palak paneer + roti',
     'Mixed vegetable sabzi + roti','Bhindi / lauki sabzi + roti','Kadhi + rice','Curd rice + veggies',
     'Khichdi + curd','Soy chunks curry + rice','Sprouts salad + roti','Lobia + rice','Egg curry + roti',
     'Chicken curry + roti/rice','Mutton curry + roti/rice','Fish curry + rice'
   ];
+  let DINNER_DISHES = LUNCH_DISHES.slice();
   let BREAKFAST_DISHES = [
     '2 moong chillas + 1 boiled egg','1 bowl kala chana + 1 egg','Vegetable oats with milk + 2 eggs',
     'Lobia + 1 egg','Besan chilla + 50g paneer','Dalia with milk + 2 eggs','Poha + 2 eggs','Moong chilla',
@@ -684,7 +707,7 @@
   const WEEK_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
   let weeklyMenu = { breakfast: Object.assign({}, DEFAULT_BREAKFAST_MENU), lunch:{}, dinner:{} };
 
-  function dishOptions(){ const m=LUNCH_DINNER_DISHES.slice(); customDishes.forEach(d=>{ if(!m.includes(d)) m.push(d); }); return m; }
+  function dishOptions(mealType){ const m=(mealType==='dinner'?DINNER_DISHES:LUNCH_DISHES).slice(); customDishes.forEach(d=>{ if(!m.includes(d)) m.push(d); }); return m; }
   function breakfastDishOptions(){ const m=BREAKFAST_DISHES.slice(); customBreakfastDishes.forEach(d=>{ if(!m.includes(d)) m.push(d); }); return m; }
 
   // ---------- Checklist ----------
@@ -798,8 +821,8 @@
   }
   function renderMenuEditor(){
     renderMenuSection('breakfast', 'menuRowsBreakfast', breakfastDishOptions());
-    renderMenuSection('lunch', 'menuRowsLunch', dishOptions());
-    renderMenuSection('dinner', 'menuRowsDinner', dishOptions());
+    renderMenuSection('lunch', 'menuRowsLunch', dishOptions('lunch'));
+    renderMenuSection('dinner', 'menuRowsDinner', dishOptions('dinner'));
   }
   function onMenuSelectChange(e){
     const mealType = e.target.getAttribute('data-meal');
@@ -810,7 +833,7 @@
       if(entered && entered.trim()){
         val = entered.trim();
         if(mealType === 'breakfast'){ if(!breakfastDishOptions().includes(val)) customBreakfastDishes.push(val); }
-        else { if(!dishOptions().includes(val)) customDishes.push(val); }
+        else { if(!dishOptions(mealType).includes(val)) customDishes.push(val); }
       } else { renderMenuEditor(); return; }
     }
     if(!weeklyMenu[mealType]) weeklyMenu[mealType] = {};
@@ -930,20 +953,57 @@
 
   // ---------- Personalised setup imported from the intake questionnaire ----------
   function validatePersonalConfig(cfg){
-    if(!cfg || cfg.version!==1 || !cfg.profile || typeof cfg.profile!=='object') throw new Error('Unsupported setup file');
+    if(!cfg || ![1,2].includes(cfg.version) || !cfg.profile || typeof cfg.profile!=='object') throw new Error('Unsupported setup file');
     if(!cfg.profile.expectedDate || isNaN(new Date(cfg.profile.expectedDate+'T00:00:00').getTime())) throw new Error('Expected delivery date is missing or invalid');
     if(!Array.isArray(cfg.dailyPlan) || cfg.dailyPlan.some(x=>!x || !x.id || !x.text)) throw new Error('Daily plan is invalid');
     return cfg;
   }
+  function setPersonalAppName(name){
+    const title=name || 'Pregnancy Dashboard';
+    document.getElementById('dashboardTitle').textContent=title;
+    document.title=title;
+    const apple=document.querySelector('meta[name="apple-mobile-web-app-title"]');
+    if(apple) apple.setAttribute('content',title.slice(0,30));
+  }
+  function renderCareSummary(cfg){
+    const details=(cfg&&(cfg.details||cfg.context))||{};
+    const profile=(cfg&&cfg.profile)||{};
+    const rows=[
+      ['Care team',details.doctor],
+      ['Conditions or allergies',Array.isArray(details.conditions)?details.conditions.join(', '):details.conditions],
+      ['Care notes',details.conditionsNote],
+      ['Water target',profile.waterTarget],
+      ['Movement method',profile.kickMethod],
+      ['Weight range',details.weightRange],
+      ['Activity guidance',details.activityNote],
+      ['Other supplied notes',details.anythingElse]
+    ].filter(row=>row[1]);
+    const card=document.getElementById('careSummaryCard');
+    const grid=document.getElementById('careSummaryGrid');
+    card.hidden=!rows.length;
+    grid.innerHTML='';
+    rows.forEach(([key,value])=>{
+      const item=document.createElement('div'); item.className='care-item';
+      const k=document.createElement('span'); k.className='k'; k.textContent=key;
+      const v=document.createElement('span'); v.className='v'; v.textContent=String(value);
+      item.append(k,v); grid.appendChild(item);
+    });
+    const kickSub=document.querySelector('#kickCard .sub');
+    if(kickSub && profile.kickMethod) kickSub.textContent='Plan-supplied method: '+profile.kickMethod+' Confirm this method with the treating clinician.';
+    const weightSub=document.querySelector('#weightCard .sub');
+    if(weightSub && details.weightRange) weightSub.textContent='Plan-supplied healthy range: '+details.weightRange+' Confirm the target with the treating clinician.';
+  }
   function applyPersonalConfig(raw){
     if(!raw){
-      CHECKLIST=[]; DOS=[]; DONTS=[]; SEED_QUESTIONS=[];
-      LUNCH_DINNER_DISHES=[]; BREAKFAST_DISHES=[]; DEFAULT_BREAKFAST_MENU={};
+      document.getElementById('setupCard').hidden=false;
+      document.getElementById('careSummaryCard').hidden=true;
+      setPersonalAppName('Pregnancy Dashboard');
       fillList('doList',DOS); fillList('dontList',DONTS); renderHero(); return;
     }
     const cfg=validatePersonalConfig(raw);
+    document.getElementById('setupCard').hidden=true;
     EDD=new Date(cfg.profile.expectedDate+'T00:00:00');
-    document.getElementById('dashboardTitle').textContent=cfg.profile.displayName || 'Pregnancy Dashboard';
+    setPersonalAppName(cfg.profile.displayName || 'Pregnancy Dashboard');
     document.getElementById('eddDisplay').textContent=EDD.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
     document.getElementById('medicalDisclaimer').textContent=cfg.profile.medicalDisclaimer || document.getElementById('medicalDisclaimer').textContent;
     const protein=document.getElementById('proteinGoal');
@@ -953,9 +1013,16 @@
     DOS=Array.isArray(cfg.dos)?cfg.dos.slice():[];
     DONTS=Array.isArray(cfg.donts)?cfg.donts.slice():[];
     SEED_QUESTIONS=(Array.isArray(cfg.questions)?cfg.questions:[]).map((text,i)=>({id:'seed-'+i,text,asked:false}));
-    BREAKFAST_DISHES=(cfg.mealOptions&&Array.isArray(cfg.mealOptions.breakfast))?cfg.mealOptions.breakfast.slice():[];
-    LUNCH_DINNER_DISHES=(cfg.mealOptions&&Array.isArray(cfg.mealOptions.lunchDinner))?cfg.mealOptions.lunchDinner.slice():[];
-    DEFAULT_BREAKFAST_MENU={};
+    if(cfg.mealOptions&&Array.isArray(cfg.mealOptions.breakfast)&&cfg.mealOptions.breakfast.length) BREAKFAST_DISHES=cfg.mealOptions.breakfast.slice();
+    const legacyMeals=(cfg.mealOptions&&Array.isArray(cfg.mealOptions.lunchDinner))?cfg.mealOptions.lunchDinner:[];
+    if(cfg.mealOptions&&Array.isArray(cfg.mealOptions.lunch)&&cfg.mealOptions.lunch.length) LUNCH_DISHES=cfg.mealOptions.lunch.slice();
+    else if(legacyMeals.length) LUNCH_DISHES=legacyMeals.slice();
+    if(cfg.mealOptions&&Array.isArray(cfg.mealOptions.dinner)&&cfg.mealOptions.dinner.length) DINNER_DISHES=cfg.mealOptions.dinner.slice();
+    else if(legacyMeals.length) DINNER_DISHES=legacyMeals.slice();
+    if(cfg.weeklyMenu&&cfg.weeklyMenu.breakfast) DEFAULT_BREAKFAST_MENU=Object.assign({},cfg.weeklyMenu.breakfast);
+    else if(cfg.mealOptions&&cfg.mealOptions.breakfastRotation) DEFAULT_BREAKFAST_MENU=Object.assign({},cfg.mealOptions.breakfastRotation);
+    else if(BREAKFAST_DISHES.length) DEFAULT_BREAKFAST_MENU=Object.fromEntries(WEEK_DAYS.map((day,i)=>[day,BREAKFAST_DISHES[i%BREAKFAST_DISHES.length]]));
+    renderCareSummary(cfg);
     fillList('doList',DOS); fillList('dontList',DONTS); renderHero();
   }
 
@@ -1324,6 +1391,7 @@
     await clearLocalOnly();
   }
   document.getElementById('backupBtn').addEventListener('click',()=>makeBackup().catch(e=>alert('Backup failed: '+e.message)));
+  document.getElementById('setupImportBtn').addEventListener('click',()=>document.getElementById('configFile').click());
   document.getElementById('configImportBtn').addEventListener('click',()=>document.getElementById('configFile').click());
   document.getElementById('configFile').addEventListener('change',async(e)=>{
     const file=e.target.files&&e.target.files[0];
@@ -1437,22 +1505,24 @@
   applyPersonalConfig(personalConfig);
   const loaded = await loadData();
   if(loaded){
+    const configChanged=!!(personalConfig && loaded.configCreatedAt !== activeConfigCreatedAt);
     allChecklist = loaded.checklist || {};
     questions = Array.isArray(loaded.questions) ? loaded.questions : [];
-    if(personalConfig && loaded.configCreatedAt !== activeConfigCreatedAt){
+    if(configChanged){
       const existingQuestionText=new Set(questions.map(q=>q.text));
       questions=questions.concat(SEED_QUESTIONS.filter(q=>!existingQuestionText.has(q.text)));
     }
     const menuData = loaded.menu || {};
-    const hasBreakfast = menuData.breakfast && Object.keys(menuData.breakfast).length > 0;
+    const hasBreakfast = !configChanged && menuData.breakfast && Object.keys(menuData.breakfast).length > 0;
     weeklyMenu = {
       breakfast: hasBreakfast ? menuData.breakfast : Object.assign({}, DEFAULT_BREAKFAST_MENU),
-      lunch: menuData.lunch || {}, dinner: menuData.dinner || {}
+      lunch: configChanged ? {} : (menuData.lunch || {}), dinner: configChanged ? {} : (menuData.dinner || {})
     };
     customDishes = Array.isArray(loaded.customDishes) ? loaded.customDishes : [];
     customBreakfastDishes = Array.isArray(loaded.customBreakfastDishes) ? loaded.customBreakfastDishes : [];
     allKicks = loaded.kicks && typeof loaded.kicks === 'object' ? loaded.kicks : {};
     weights = Array.isArray(loaded.weights) ? loaded.weights : [];
+    if(configChanged && personalConfig.startingWeight && !weights.length) weights=[{date:localDateKey(),kg:Number(personalConfig.startingWeight)}];
   } else {
     questions = SEED_QUESTIONS.slice();
     if(personalConfig && personalConfig.startingWeight){ weights=[{date:localDateKey(),kg:Number(personalConfig.startingWeight)}]; }

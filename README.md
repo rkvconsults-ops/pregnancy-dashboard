@@ -13,6 +13,16 @@ backup, recovery-code linking, and encrypted cross-device sync.
 
 This dashboard organises user-supplied information. It is not medical advice.
 
+## Tailored dashboard workflow
+
+1. Share `pregnancy-intake-questionnaire.html` or its hosted link with the person.
+2. They complete it locally and download the generated setup JSON.
+3. They import that file into the dashboard. The dashboard adopts their supplied
+   name, dates, routine, meal choices, care context and tracking preferences.
+
+The questionnaire and dashboard do not upload the intake answers. The setup file
+must be handled as sensitive health information and must never be committed here.
+
 ## Local test
 
 Serve this directory on localhost. The canonical source repository maintains
