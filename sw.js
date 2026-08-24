@@ -1,7 +1,7 @@
 /* Pregnancy Dashboard service worker — caches only the app's own files (offline shell).
    It never touches cross-origin requests, so encrypted sync traffic
    always goes straight to the network, untouched. */
-const CACHE = 'preg-dash-v7';
+const CACHE = 'preg-dash-v8';
 const ASSETS = [
   './',
   './index.html',

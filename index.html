@@ -379,6 +379,12 @@
   .care-item{background:var(--paper-soft);border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
   .care-item .k{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);font-weight:700;margin-bottom:4px;}
   .care-item .v{font-size:13px;color:var(--ink);line-height:1.45;white-space:pre-wrap;}
+  .today-dock{position:fixed;z-index:70;right:18px;bottom:18px;width:min(360px,calc(100vw - 36px));border:1px solid rgba(47,125,110,.25);border-radius:16px;background:rgba(255,255,255,.96);box-shadow:0 10px 32px rgba(10,45,38,.18);padding:12px 14px;text-align:left;color:var(--ink);cursor:pointer;backdrop-filter:blur(10px);}
+  .today-dock-title{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;font-weight:750;color:var(--teal);}
+  .today-dock-next{display:block;margin-top:4px;font-size:12px;line-height:1.35;color:var(--ink-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .today-dock:focus-visible{outline:3px solid rgba(47,125,110,.28);outline-offset:2px;}
+  #todayCard{scroll-margin-top:18px;}
+  @media(max-width:640px){body{padding-bottom:92px}.today-dock{right:10px;bottom:10px;width:calc(100vw - 20px)}}
 
   @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
 </style>
@@ -386,6 +392,11 @@
 <body>
 
 <div class="wrap">
+
+  <button class="today-dock" id="todayDock" type="button" aria-controls="todayCard">
+    <span class="today-dock-title"><span>Today's plan</span><span id="todayDockCount">0 / 0 done</span></span>
+    <span class="today-dock-next" id="todayDockNext">Loading today's next task...</span>
+  </button>
 
   <div class="hero">
     <div class="hero-head">
@@ -768,7 +779,11 @@
     const done = CHECKLIST.filter(i=>checklistState[i.id]).length;
     document.getElementById('progFill').style.width = (total? (done/total*100):0) + '%';
     document.getElementById('progCount').textContent = done + ' / ' + total + ' done';
+    document.getElementById('todayDockCount').textContent = done + ' / ' + total + ' done';
+    const next=CHECKLIST.find(item=>!checklistState[item.id]);
+    document.getElementById('todayDockNext').textContent = next ? 'Next: '+next.text : (total ? 'All tasks completed for today' : 'No tasks in today\'s plan');
   }
+  document.getElementById('todayDock').addEventListener('click',()=>document.getElementById('todayCard').scrollIntoView({behavior:'smooth',block:'start'}));
 
   // ---------- History ----------
   function renderHistory(){
@@ -919,17 +934,23 @@
   document.getElementById('weightInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') saveWeight(); });
 
   // ---------- Do / Don't ----------
-  let DOS = [
+  const REQUIRED_DOS = [
     'Take every medicine at its usual time','Keep iron and calcium about 2 hours apart','Include a protein source in every meal',
     'Sip water steadily through the day','Walk a little after meals','Eat fruit and vegetables daily',
     'Continue yoga only if your doctor has cleared it','Track fetal movement daily','Keep every ANC visit',
     "Follow your doctor's prescription over any general guidance"
   ];
-  let DONTS = [
+  const REQUIRED_DONTS = [
     'Skip a medicine dose','Take calcium and iron together','Have tea, coffee or milk right around the iron dose',
     'Ignore reduced fetal movement','Ignore fluid leakage','Ignore vaginal bleeding',
     'Ignore a severe headache or blurred vision','Self-medicate, even for bloating or constipation','Overdo fried food when bloating flares up'
   ];
+  let DOS = REQUIRED_DOS.slice();
+  let DONTS = REQUIRED_DONTS.slice();
+  function mergeGuidance(required, supplied){
+    const values=required.concat(Array.isArray(supplied)?supplied:[]).map(x=>String(x||'').trim()).filter(Boolean);
+    return values.filter((value,index)=>values.findIndex(other=>other.toLocaleLowerCase()===value.toLocaleLowerCase())===index);
+  }
   function fillList(id, arr){ document.getElementById(id).innerHTML = arr.map(t=>'<li>'+escapeHtml(t)+'</li>').join(''); }
   fillList('doList', DOS); fillList('dontList', DONTS);
 
@@ -1012,8 +1033,8 @@
     if(cfg.profile.proteinTarget){ protein.hidden=false; protein.innerHTML='Daily protein target supplied in the plan: <strong>'+escapeHtml(cfg.profile.proteinTarget)+'</strong>.'; }
     else protein.hidden=true;
     CHECKLIST=cfg.dailyPlan.slice();
-    DOS=Array.isArray(cfg.dos)?cfg.dos.slice():[];
-    DONTS=Array.isArray(cfg.donts)?cfg.donts.slice():[];
+    DOS=mergeGuidance(REQUIRED_DOS,cfg.dos);
+    DONTS=mergeGuidance(REQUIRED_DONTS,cfg.donts);
     SEED_QUESTIONS=(Array.isArray(cfg.questions)?cfg.questions:[]).map((text,i)=>({id:'seed-'+i,text,asked:false}));
     if(cfg.mealOptions&&Array.isArray(cfg.mealOptions.breakfast)&&cfg.mealOptions.breakfast.length) BREAKFAST_DISHES=cfg.mealOptions.breakfast.slice();
     const legacyMeals=(cfg.mealOptions&&Array.isArray(cfg.mealOptions.lunchDinner))?cfg.mealOptions.lunchDinner:[];
