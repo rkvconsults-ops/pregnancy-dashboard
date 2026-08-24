@@ -1,7 +1,7 @@
 /* Pregnancy Dashboard service worker — caches only the app's own files (offline shell).
    It never touches cross-origin requests, so encrypted sync traffic
    always goes straight to the network, untouched. */
-const CACHE = 'preg-dash-v4';
+const CACHE = 'preg-dash-v5';
 const ASSETS = [
   './',
   './index.html',
@@ -9,10 +9,10 @@ const ASSETS = [
   './sync-config.js',
   './qrcode-generator.js',
   './pregnancy-intake-questionnaire.html',
-  './manifest.webmanifest',
-  './icon-192.png',
-  './icon-512.png',
-  './apple-touch-icon.png'
+  './manifest-v2.webmanifest',
+  './icon-192-v2.png',
+  './icon-512-v2.png',
+  './apple-touch-icon-v2.png'
 ];
 
 self.addEventListener('install', (e) => {
