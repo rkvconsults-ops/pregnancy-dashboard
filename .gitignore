@@ -1,0 +1,4 @@
+pregnancy-dashboard-backup-*.json
+personal-config.json
+*.recovery.txt
+.DS_Store

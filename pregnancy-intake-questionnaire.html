@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pregnancy Tracker — Intake Questionnaire</title>
+<style>
+  :root{
+    --bg:#F4F6F5;
+    --surface:#FFFFFF;
+    --ink:#1D2A27;
+    --ink-soft:#586A64;
+    --ink-faint:#8A968F;
+    --accent:#2F7D6E;
+    --accent-deep:#1F4A42;
+    --accent-soft:#EAF2EF;
+    --amber:#9A6B1F;
+    --amber-soft:#F6EEDD;
+    --alert:#B23A2E;
+    --alert-bg:#FBEDEB;
+    --line:#E7EBE8;
+    --line-soft:#EEF1EF;
+    --good:#3E8E6E;
+    --shadow:0 1px 2px rgba(29,42,39,0.04), 0 4px 16px rgba(29,42,39,0.05);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+    line-height:1.55; -webkit-font-smoothing:antialiased;
+    padding:24px 16px 60px;
+  }
+  ::selection{background:var(--accent); color:#fff;}
+  :focus-visible{outline:2.5px solid var(--accent); outline-offset:2px; border-radius:6px;}
+  .wrap{max-width:760px; margin:0 auto;}
+
+  .hero{
+    background:linear-gradient(160deg, var(--accent-deep), var(--accent) 90%);
+    color:#EAF2EF; border-radius:18px; padding:28px 26px 24px; box-shadow:var(--shadow);
+  }
+  .hero h1{font-size:22px; font-weight:700; margin:0 0 8px; letter-spacing:-0.01em;}
+  .hero p{font-size:13.5px; opacity:0.88; margin:0; max-width:560px;}
+  .hero .meta{font-size:12px; opacity:0.75; margin-top:14px;}
+
+  .progress-wrap{margin-top:16px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 18px; box-shadow:var(--shadow); display:flex; align-items:center; gap:14px;}
+  .progress-track{flex:1; height:7px; background:var(--line); border-radius:99px; overflow:hidden;}
+  .progress-fill{height:100%; background:var(--good); border-radius:99px; transition:width .2s ease; width:0%;}
+  .progress-label{font-size:12px; color:var(--ink-soft); font-weight:600; white-space:nowrap;}
+
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:22px; box-shadow:var(--shadow); margin-top:16px;}
+  .card .sec-num{font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.09em; color:var(--amber); margin-bottom:6px;}
+  .card h2{font-size:17px; font-weight:700; margin:0 0 4px; color:var(--ink); letter-spacing:-0.01em;}
+  .card .sub{font-size:12.5px; color:var(--ink-soft); margin-bottom:18px; line-height:1.5;}
+
+  .field{margin-bottom:18px;}
+  .field:last-child{margin-bottom:0;}
+  .field label.q{display:block; font-size:13.5px; font-weight:600; color:var(--ink); margin-bottom:3px;}
+  .field .hint{font-size:12px; color:var(--ink-faint); margin-bottom:8px; line-height:1.5;}
+  .field .opt-tag{font-weight:500; color:var(--ink-faint); font-size:11.5px; text-transform:none; letter-spacing:0;}
+
+  input[type=text], input[type=number], input[type=date], textarea, select{
+    width:100%; padding:11px 13px; border:1px solid var(--line); border-radius:10px;
+    font-family:inherit; font-size:14px; background:#fff; color:var(--ink);
+  }
+  input:focus, textarea:focus, select:focus{border-color:var(--accent);}
+  textarea{resize:vertical; min-height:70px; line-height:1.5;}
+
+  .choice-group{display:flex; flex-wrap:wrap; gap:8px;}
+  .choice{
+    border:1px solid var(--line); border-radius:10px; padding:9px 14px; font-size:13.5px; cursor:pointer;
+    background:#fff; color:var(--ink-soft); user-select:none;
+  }
+  .choice input{position:absolute; opacity:0; pointer-events:none;}
+  .choice.checked{background:var(--accent-soft); border-color:var(--accent); color:var(--accent-deep); font-weight:600;}
+
+  .repeat-row{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; margin-bottom:8px; align-items:start;}
+  .repeat-row.q-row{grid-template-columns:1fr auto;}
+  @media (max-width:640px){ .repeat-row{grid-template-columns:1fr 1fr;} .repeat-row.q-row{grid-template-columns:1fr auto;} }
+  .repeat-row input{font-size:13px; padding:9px 10px;}
+  .repeat-row .rm{
+    background:none; border:1px solid var(--line); color:var(--ink-faint); cursor:pointer; border-radius:8px;
+    width:36px; height:36px; font-size:16px; flex:none;
+  }
+  .repeat-row .rm:hover{color:var(--alert); border-color:var(--alert); background:var(--alert-bg);}
+  .add-row{
+    margin-top:6px; background:var(--accent-soft); color:var(--accent-deep); border:1px dashed var(--accent);
+    border-radius:10px; padding:9px 14px; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .add-row:hover{background:#DDEEE8;}
+  .row-labels{display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; margin-bottom:4px;}
+  @media (max-width:640px){ .row-labels{display:none;} }
+  .row-labels span{font-size:10.5px; text-transform:uppercase; letter-spacing:0.06em; color:var(--ink-faint); font-weight:700;}
+
+  .conditional{margin-top:14px; padding-top:14px; border-top:1px dashed var(--line); display:none;}
+  .conditional.show{display:block;}
+
+  .submit-card{background:var(--accent-deep); color:#EAF2EF; border-radius:16px; padding:26px 24px; margin-top:16px; text-align:center;}
+  .submit-card h2{font-size:18px; margin:0 0 6px; font-weight:700;}
+  .submit-card p{font-size:13px; opacity:0.85; margin:0 0 18px; max-width:480px; margin-left:auto; margin-right:auto;}
+  .submit-actions{display:flex; gap:10px; justify-content:center; flex-wrap:wrap;}
+  .btn-light{background:#fff; color:var(--accent-deep); border:none; border-radius:10px; padding:12px 20px; font-size:13.5px; font-weight:700; cursor:pointer;}
+  .btn-light:hover{background:#EAF2EF;}
+  .btn-outline{background:transparent; color:#EAF2EF; border:1px solid rgba(255,255,255,0.5); border-radius:10px; padding:12px 20px; font-size:13.5px; font-weight:700; cursor:pointer;}
+  .btn-outline:hover{background:rgba(255,255,255,0.1);}
+  .copy-status{margin-top:12px; font-size:12.5px; opacity:0; transition:opacity .2s ease;}
+  .copy-status.show{opacity:0.95;}
+
+  .summary-box{margin-top:16px; background:#0F2622; border-radius:12px; padding:16px 18px; text-align:left; display:none;}
+  .summary-box.show{display:block;}
+  .summary-box pre{white-space:pre-wrap; word-break:break-word; font-family:'SFMono-Regular', Menlo, Consolas, monospace; font-size:12px; color:#CFE6DE; margin:0; line-height:1.6; max-height:340px; overflow:auto;}
+
+  .footnote{max-width:760px; margin:20px auto 0; font-size:11.5px; color:var(--ink-faint); text-align:center; padding:0 12px; line-height:1.6;}
+  .required-mark{color:var(--alert); margin-left:2px;}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <h1>Pregnancy Tracker — Intake Questionnaire</h1>
+    <p>Fill this in for yourself, or for the pregnant family member you're setting a daily tracker up for. Answer what you know — anything left blank just gets skipped or defaulted to general guidance, clearly marked as such.</p>
+    <div class="meta">Takes about 8–10 minutes · nothing here is submitted anywhere · answers stay on this device until you copy or download them</div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progFill"></div></div>
+    <div class="progress-label" id="progLabel">0% filled</div>
+  </div>
+
+  <form id="qForm">
+
+    <!-- 1 -->
+    <div class="card">
+      <div class="sec-num">Section 1 of 9</div>
+      <h2>About her</h2>
+      <div class="sub">So the tracker greets the right person and we know who to check back with.</div>
+
+      <div class="field">
+        <label class="q">Her full name (or the name she goes by)<span class="required-mark">*</span></label>
+        <input type="text" name="herName" placeholder="e.g. her first name" required>
+      </div>
+
+      <div class="field">
+        <label class="q">Who's filling this in?</label>
+        <div class="choice-group" data-name="filledBy">
+          <label class="choice"><input type="radio" name="filledBy" value="Herself">Herself</label>
+          <label class="choice"><input type="radio" name="filledBy" value="Partner">Partner</label>
+          <label class="choice"><input type="radio" name="filledBy" value="Parent">Parent</label>
+          <label class="choice"><input type="radio" name="filledBy" value="Sibling">Sibling</label>
+          <label class="choice"><input type="radio" name="filledBy" value="Other family / friend">Other family / friend</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q">Best way to reach you with questions while this is being built <span class="opt-tag">(optional)</span></label>
+        <input type="text" name="contact" placeholder="Phone, email, or WhatsApp">
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="card">
+      <div class="sec-num">Section 2 of 9</div>
+      <h2>Dates &amp; care</h2>
+      <div class="sub">This drives the week counter, trimester, and days-to-go on the dashboard.</div>
+
+      <div class="field">
+        <label class="q">Expected date of delivery (EDD), if known</label>
+        <input type="date" name="edd">
+      </div>
+
+      <div class="field">
+        <label class="q">If EDD isn't known — last menstrual period (LMP) date instead</label>
+        <input type="date" name="lmp">
+      </div>
+
+      <div class="field">
+        <label class="q">Doctor / hospital name <span class="opt-tag">(optional)</span></label>
+        <input type="text" name="doctor" placeholder="e.g. Dr. Sharma, Cloudnine Hospital">
+      </div>
+
+      <div class="field">
+        <label class="q">Any diagnosed conditions this pregnancy?</label>
+        <div class="hint">Select all that apply — these trigger extra notes and warnings on the tracker (like the "skip dates if gestational diabetes" note).</div>
+        <div class="choice-group" data-name="conditions" data-multi="true">
+          <label class="choice"><input type="checkbox" name="conditions" value="Gestational diabetes">Gestational diabetes</label>
+          <label class="choice"><input type="checkbox" name="conditions" value="Thyroid issue">Thyroid issue</label>
+          <label class="choice"><input type="checkbox" name="conditions" value="High BP / preeclampsia risk">High BP / preeclampsia risk</label>
+          <label class="choice"><input type="checkbox" name="conditions" value="Anemia">Anemia</label>
+          <label class="choice"><input type="checkbox" name="conditions" value="PCOS history">PCOS history</label>
+          <label class="choice"><input type="checkbox" name="conditions" value="None diagnosed">None diagnosed</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q">Anything else about the conditions above, or known allergies <span class="opt-tag">(optional)</span></label>
+        <textarea name="conditionsNote" placeholder="e.g. borderline gestational diabetes since week 24, monitoring sugar twice daily"></textarea>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="card">
+      <div class="sec-num">Section 3 of 9</div>
+      <h2>Medicines</h2>
+      <div class="sub">Exactly as prescribed — name, dose, when it's taken, and any spacing rules (e.g. "keep 2 hours from calcium"). Add as many as needed.</div>
+
+      <div class="row-labels">
+        <span>Medicine</span><span>Dose</span><span>Time of day</span><span></span>
+      </div>
+      <div id="medRows"></div>
+      <button type="button" class="add-row" id="addMed">+ Add another medicine</button>
+
+      <div class="field" style="margin-top:16px;">
+        <label class="q">Any general timing rules the doctor gave <span class="opt-tag">(optional)</span></label>
+        <textarea name="medRules" placeholder="e.g. iron and calcium kept 2 hours apart; iron away from tea/coffee/milk"></textarea>
+      </div>
+    </div>
+
+    <!-- 4 -->
+    <div class="card">
+      <div class="sec-num">Section 4 of 9</div>
+      <h2>Diet &amp; nutrition</h2>
+      <div class="sub">If a dietitian or doctor gave a specific plan, list it. If not, leave blank — the tracker will use general trimester-appropriate guidance and say so clearly.</div>
+
+      <div class="field">
+        <label class="q">Has she been given a specific meal plan?</label>
+        <div class="choice-group" data-name="hasMealPlan">
+          <label class="choice"><input type="radio" name="hasMealPlan" value="Yes">Yes</label>
+          <label class="choice"><input type="radio" name="hasMealPlan" value="No">No — use general guidance</label>
+        </div>
+      </div>
+
+      <div class="conditional" id="mealPlanFields">
+        <div class="field">
+          <label class="q">Breakfast options <span class="opt-tag">(one per line — these rotate through the week)</span></label>
+          <textarea name="breakfastOptions" placeholder="2 moong chillas + 1 boiled egg&#10;Vegetable oats with milk + 2 eggs"></textarea>
+        </div>
+        <div class="field">
+          <label class="q">Lunch — main dish options <span class="opt-tag">(one per line)</span></label>
+          <textarea name="lunchOptions" placeholder="Dal + roti + sabzi&#10;Rajma chawal"></textarea>
+        </div>
+        <div class="field">
+          <label class="q">Dinner — main dish options <span class="opt-tag">(one per line)</span></label>
+          <textarea name="dinnerOptions" placeholder="Paneer sabzi + roti&#10;Khichdi + curd"></textarea>
+        </div>
+        <div class="field">
+          <label class="q">Snacks <span class="opt-tag">(optional, one per line)</span></label>
+          <textarea name="snackOptions" placeholder="Roasted makhana&#10;Sprouts chaat"></textarea>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q">Daily protein target in grams <span class="opt-tag">(optional)</span></label>
+        <input type="text" name="proteinTarget" placeholder="e.g. 85–90 g">
+      </div>
+      <div class="field">
+        <label class="q">Daily water target <span class="opt-tag">(optional — default guidance is 2.5–3 L)</span></label>
+        <input type="text" name="waterTarget" placeholder="e.g. 2.5–3 L">
+      </div>
+      <div class="field">
+        <label class="q">Foods to avoid or restrict <span class="opt-tag">(optional)</span></label>
+        <textarea name="foodAvoid" placeholder="e.g. avoid fruit juice, limit fried food, no raw papaya"></textarea>
+      </div>
+    </div>
+
+    <!-- 5 -->
+    <div class="card">
+      <div class="sec-num">Section 5 of 9</div>
+      <h2>Activity</h2>
+      <div class="sub">What she's been cleared for, straight from the doctor.</div>
+
+      <div class="field">
+        <label class="q">Cleared for walking?</label>
+        <div class="choice-group" data-name="walkCleared">
+          <label class="choice"><input type="radio" name="walkCleared" value="Yes">Yes</label>
+          <label class="choice"><input type="radio" name="walkCleared" value="No">No</label>
+          <label class="choice"><input type="radio" name="walkCleared" value="Not discussed">Not discussed yet</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q">Cleared for yoga / other exercise?</label>
+        <div class="choice-group" data-name="yogaCleared">
+          <label class="choice"><input type="radio" name="yogaCleared" value="Yes">Yes</label>
+          <label class="choice"><input type="radio" name="yogaCleared" value="No">No</label>
+          <label class="choice"><input type="radio" name="yogaCleared" value="Not discussed">Not discussed yet</label>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="q">Any activity restrictions or notes <span class="opt-tag">(optional)</span></label>
+        <textarea name="activityNote" placeholder="e.g. no yoga after week 32, only gentle walking"></textarea>
+      </div>
+    </div>
+
+    <!-- 6 -->
+    <div class="card">
+      <div class="sec-num">Section 6 of 9</div>
+      <h2>Movement &amp; weight tracking</h2>
+      <div class="sub">Powers the kick counter and weight log.</div>
+
+      <div class="field">
+        <label class="q">Has the doctor given a fetal movement (kick count) method or target?</label>
+        <div class="choice-group" data-name="hasKickMethod">
+          <label class="choice"><input type="radio" name="hasKickMethod" value="Yes">Yes</label>
+          <label class="choice"><input type="radio" name="hasKickMethod" value="No">No</label>
+        </div>
+      </div>
+      <div class="field">
+        <label class="q">If yes, describe it <span class="opt-tag">(optional)</span></label>
+        <input type="text" name="kickMethod" placeholder="e.g. 10 movements within 2 hours after meals">
+      </div>
+
+      <div class="field">
+        <label class="q">Current / starting weight in kg <span class="opt-tag">(optional)</span></label>
+        <input type="number" step="0.1" min="0" max="300" name="startWeight" placeholder="e.g. 64.5">
+      </div>
+      <div class="field">
+        <label class="q">Healthy weight gain range, if the doctor gave one <span class="opt-tag">(optional)</span></label>
+        <input type="text" name="weightRange" placeholder="e.g. 11–16 kg total for this pregnancy">
+      </div>
+    </div>
+
+    <!-- 7 -->
+    <div class="card">
+      <div class="sec-num">Section 7 of 9</div>
+      <h2>Questions for the doctor</h2>
+      <div class="sub">Anything already on her mind for the next visit — the tracker keeps a running list of these.</div>
+
+      <div id="qRows"></div>
+      <button type="button" class="add-row" id="addQ">+ Add another question</button>
+    </div>
+
+    <!-- 8 -->
+    <div class="card">
+      <div class="sec-num">Section 8 of 9</div>
+      <h2>Anything else</h2>
+      <div class="sub">The standard do's/don'ts and emergency red-flag list carry over automatically — only add here if something specific to her should be included or changed.</div>
+
+      <div class="field">
+        <label class="q">Extra do's / don'ts specific to her <span class="opt-tag">(optional)</span></label>
+        <textarea name="customDos" placeholder="e.g. avoid the car for long drives after week 34"></textarea>
+      </div>
+      <div class="field">
+        <label class="q">Anything else we should know <span class="opt-tag">(optional)</span></label>
+        <textarea name="anythingElse"></textarea>
+      </div>
+    </div>
+
+    <!-- 9 -->
+    <div class="card">
+      <div class="sec-num">Section 9 of 9</div>
+      <h2>Wrap-up</h2>
+      <div class="field">
+        <label class="q">Your name <span class="opt-tag">(the person submitting this)</span></label>
+        <input type="text" name="submitterName" placeholder="e.g. Partner or caregiver">
+      </div>
+    </div>
+
+  </form>
+
+  <div class="submit-card">
+    <h2>All set</h2>
+    <p>Nothing here gets sent anywhere automatically. Copy or download your answers below, then send that to whoever is building the tracker.</p>
+    <div class="submit-actions">
+      <button type="button" class="btn-light" id="genSummary">Generate my answers</button>
+      <button type="button" class="btn-outline" id="downloadBtn">Download as text file</button>
+      <button type="button" class="btn-outline" id="configBtn">Download personalised app setup</button>
+    </div>
+    <div class="copy-status" id="copyStatus"></div>
+    <div class="summary-box" id="summaryBox"><pre id="summaryText"></pre>
+      <div style="margin-top:12px;"><button type="button" class="btn-light" id="copyBtn">Copy to clipboard</button></div>
+    </div>
+  </div>
+
+  <div class="footnote">Your answers are only kept in this browser's memory while the page is open (with a light auto-save to this device so a refresh doesn't lose your progress) — nothing is uploaded or sent anywhere unless you copy or download it yourself and share it.</div>
+</div>
+
+<script>
+(function(){
+  const form = document.getElementById('qForm');
+
+  // ---------- choice groups (single = radio-styled, multi = checkbox-styled) ----------
+  document.querySelectorAll('.choice-group').forEach(group=>{
+    group.querySelectorAll('.choice').forEach(label=>{
+      const input = label.querySelector('input');
+      const sync = ()=> label.classList.toggle('checked', input.checked);
+      input.addEventListener('change', ()=>{
+        if(input.type === 'radio'){
+          group.querySelectorAll('.choice').forEach(l=>l.classList.remove('checked'));
+        }
+        sync();
+        updateProgress();
+        if(input.name === 'hasMealPlan') toggleMealPlan();
+        saveDraft();
+      });
+      sync();
+    });
+  });
+
+  function toggleMealPlan(){
+    const val = form.querySelector('input[name=hasMealPlan]:checked');
+    document.getElementById('mealPlanFields').classList.toggle('show', !!val && val.value === 'Yes');
+  }
+
+  // ---------- repeatable rows: medicines ----------
+  function addMedRow(vals){
+    vals = vals || {};
+    const row = document.createElement('div');
+    row.className = 'repeat-row';
+    row.innerHTML =
+      '<input type="text" class="med-name" placeholder="e.g. iron tablet, brand name" value="'+escapeAttr(vals.name||'')+'">'+
+      '<input type="text" class="med-dose" placeholder="e.g. 1 tablet" value="'+escapeAttr(vals.dose||'')+'">'+
+      '<input type="text" class="med-time" placeholder="e.g. Morning, after breakfast" value="'+escapeAttr(vals.time||'')+'">'+
+      '<button type="button" class="rm" title="Remove">×</button>';
+    row.querySelector('.rm').addEventListener('click', ()=>{ row.remove(); updateProgress(); saveDraft(); });
+    row.querySelectorAll('input').forEach(inp=> inp.addEventListener('input', ()=>{ updateProgress(); saveDraft(); }));
+    document.getElementById('medRows').appendChild(row);
+  }
+  document.getElementById('addMed').addEventListener('click', ()=> { addMedRow(); saveDraft(); });
+
+  // ---------- repeatable rows: doctor questions ----------
+  function addQRow(vals){
+    vals = vals || {};
+    const row = document.createElement('div');
+    row.className = 'repeat-row q-row';
+    row.innerHTML =
+      '<input type="text" class="q-text" placeholder="e.g. Is the current weight gain on track?" value="'+escapeAttr(vals.text||'')+'">'+
+      '<button type="button" class="rm" title="Remove">×</button>';
+    row.querySelector('.rm').addEventListener('click', ()=>{ row.remove(); updateProgress(); saveDraft(); });
+    row.querySelector('input').addEventListener('input', ()=>{ updateProgress(); saveDraft(); });
+    document.getElementById('qRows').appendChild(row);
+  }
+  document.getElementById('addQ').addEventListener('click', ()=> { addQRow(); saveDraft(); });
+
+  function escapeAttr(s){ return String(s).replace(/"/g,'&quot;'); }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // seed with a couple of empty rows to start
+  addMedRow(); addMedRow();
+  addQRow(); addQRow();
+
+  // ---------- progress ----------
+  function updateProgress(){
+    const fields = Array.from(form.querySelectorAll('input[type=text], input[type=number], input[type=date], textarea'));
+    const filledPlain = fields.filter(f => f.value && f.value.trim() !== '').length;
+    const radiosByName = {};
+    form.querySelectorAll('input[type=radio]').forEach(r=>{ radiosByName[r.name] = radiosByName[r.name] || (r.checked); if(r.checked) radiosByName[r.name]=true; });
+    const radioFilled = Object.values(radiosByName).filter(Boolean).length;
+    const checkboxGroups = {};
+    form.querySelectorAll('input[type=checkbox]').forEach(c=>{ checkboxGroups[c.name] = checkboxGroups[c.name] || false; if(c.checked) checkboxGroups[c.name]=true; });
+    const checkboxFilled = Object.values(checkboxGroups).filter(Boolean).length;
+    const medFilled = document.querySelectorAll('#medRows .med-name').length ? Array.from(document.querySelectorAll('#medRows .med-name')).filter(i=>i.value.trim()).length>0 ? 1:0 : 0;
+    const qFilled = document.querySelectorAll('#qRows .q-text').length ? Array.from(document.querySelectorAll('#qRows .q-text')).filter(i=>i.value.trim()).length>0 ? 1:0 : 0;
+
+    const totalTrackable = fields.length + 3 /*radio groups roughly*/ + 1 /*conditions*/ + 2 /*med/q*/;
+    const filledTrackable = filledPlain + radioFilled + checkboxFilled + medFilled + qFilled;
+    const pct = Math.min(100, Math.round((filledTrackable/totalTrackable)*100));
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progLabel').textContent = pct + '% filled';
+  }
+  form.addEventListener('input', ()=>{ updateProgress(); saveDraft(); });
+
+  // ---------- summary generation ----------
+  function fmtDate(v){
+    if(!v) return '';
+    const d = new Date(v+'T00:00:00');
+    if(isNaN(d)) return v;
+    return d.toLocaleDateString('en-IN',{day:'numeric', month:'long', year:'numeric'});
+  }
+  function getRadio(name){ const el = form.querySelector('input[name="'+name+'"]:checked'); return el ? el.value : ''; }
+  function getChecks(name){ return Array.from(form.querySelectorAll('input[name="'+name+'"]:checked')).map(i=>i.value); }
+  function val(name){ const el = form.querySelector('[name="'+name+'"]'); return el ? el.value.trim() : ''; }
+  function lines(text){ return text.split('\n').map(s=>s.trim()).filter(Boolean); }
+
+  function buildSummary(){
+    const meds = Array.from(document.querySelectorAll('#medRows .repeat-row')).map(row=>{
+      const name = row.querySelector('.med-name').value.trim();
+      const dose = row.querySelector('.med-dose').value.trim();
+      const time = row.querySelector('.med-time').value.trim();
+      return {name,dose,time};
+    }).filter(m=>m.name || m.dose || m.time);
+
+    const qs = Array.from(document.querySelectorAll('#qRows .repeat-row')).map(row=>row.querySelector('.q-text').value.trim()).filter(Boolean);
+
+    let out = [];
+    out.push('PREGNANCY TRACKER — INTAKE ANSWERS');
+    out.push('Generated ' + new Date().toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}));
+    out.push('');
+    out.push('1) ABOUT HER');
+    out.push('Name: ' + (val('herName') || '—'));
+    out.push('Filled in by: ' + (getRadio('filledBy') || '—'));
+    out.push('Contact: ' + (val('contact') || '—'));
+    out.push('');
+    out.push('2) DATES & CARE');
+    out.push('EDD: ' + (val('edd') ? fmtDate(val('edd')) : '—'));
+    out.push('LMP (if EDD unknown): ' + (val('lmp') ? fmtDate(val('lmp')) : '—'));
+    out.push('Doctor / hospital: ' + (val('doctor') || '—'));
+    out.push('Diagnosed conditions: ' + (getChecks('conditions').join(', ') || '—'));
+    out.push('Conditions notes / allergies: ' + (val('conditionsNote') || '—'));
+    out.push('');
+    out.push('3) MEDICINES');
+    if(meds.length){ meds.forEach(m=> out.push('- ' + [m.name||'(unnamed)', m.dose, m.time].filter(Boolean).join(' · '))); }
+    else out.push('(none listed)');
+    out.push('General timing rules: ' + (val('medRules') || '—'));
+    out.push('');
+    out.push('4) DIET & NUTRITION');
+    out.push('Has specific meal plan: ' + (getRadio('hasMealPlan') || '—'));
+    if(getRadio('hasMealPlan') === 'Yes'){
+      out.push('Breakfast options: ' + (lines(val('breakfastOptions')).join(' | ') || '—'));
+      out.push('Lunch options: ' + (lines(val('lunchOptions')).join(' | ') || '—'));
+      out.push('Dinner options: ' + (lines(val('dinnerOptions')).join(' | ') || '—'));
+      out.push('Snacks: ' + (lines(val('snackOptions')).join(' | ') || '—'));
+    }
+    out.push('Protein target: ' + (val('proteinTarget') || '—'));
+    out.push('Water target: ' + (val('waterTarget') || '—'));
+    out.push('Foods to avoid: ' + (val('foodAvoid') || '—'));
+    out.push('');
+    out.push('5) ACTIVITY');
+    out.push('Cleared for walking: ' + (getRadio('walkCleared') || '—'));
+    out.push('Cleared for yoga/exercise: ' + (getRadio('yogaCleared') || '—'));
+    out.push('Activity notes: ' + (val('activityNote') || '—'));
+    out.push('');
+    out.push('6) MOVEMENT & WEIGHT');
+    out.push('Doctor-given kick count method: ' + (getRadio('hasKickMethod') || '—'));
+    out.push('Kick method details: ' + (val('kickMethod') || '—'));
+    out.push('Starting weight: ' + (val('startWeight') ? val('startWeight')+' kg' : '—'));
+    out.push('Healthy weight gain range: ' + (val('weightRange') || '—'));
+    out.push('');
+    out.push('7) QUESTIONS FOR THE DOCTOR');
+    if(qs.length){ qs.forEach(q=> out.push('- ' + q)); } else out.push('(none listed)');
+    out.push('');
+    out.push('8) ANYTHING ELSE');
+    out.push('Extra do\'s/don\'ts: ' + (val('customDos') || '—'));
+    out.push('Anything else: ' + (val('anythingElse') || '—'));
+    out.push('');
+    out.push('9) SUBMITTED BY');
+    out.push(val('submitterName') || '—');
+
+    return out.join('\n');
+  }
+
+  document.getElementById('genSummary').addEventListener('click', ()=>{
+    const text = buildSummary();
+    document.getElementById('summaryText').textContent = text;
+    document.getElementById('summaryBox').classList.add('show');
+    document.getElementById('summaryBox').scrollIntoView({behavior:'smooth', block:'nearest'});
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', async ()=>{
+    const text = document.getElementById('summaryText').textContent;
+    const status = document.getElementById('copyStatus');
+    try{
+      await navigator.clipboard.writeText(text);
+      status.textContent = 'Copied — paste it into WhatsApp, email, or wherever you need to send it.';
+    }catch(e){
+      status.textContent = 'Could not copy automatically — select the text above and copy it manually.';
+    }
+    status.classList.add('show');
+    setTimeout(()=> status.classList.remove('show'), 4000);
+  });
+
+  document.getElementById('downloadBtn').addEventListener('click', ()=>{
+    const text = buildSummary();
+    document.getElementById('summaryText').textContent = text;
+    document.getElementById('summaryBox').classList.add('show');
+    const blob = new Blob([text], {type:'text/plain'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const nameSlug = (val('herName')||'pregnancy-tracker').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    a.href = url; a.download = (nameSlug || 'pregnancy-tracker') + '-intake.txt';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+
+  function buildAppConfig(){
+    const meds=getMedicines().filter(m=>m.name||m.dose||m.time);
+    const qs=getQuestions().filter(Boolean);
+    const dailyPlan=meds.map((m,i)=>({
+      id:'medicine-'+(i+1), block:'Medicines', sub:m.time||'', cat:'med',
+      text:[m.name,m.dose].filter(Boolean).join(' · '), note:val('medRules')||''
+    }));
+    if(getRadio('walkCleared')==='Yes') dailyPlan.push({id:'activity-walk',block:'Activity',cat:'activity',text:'Walking cleared by the treating clinician',note:val('activityNote')||''});
+    if(getRadio('yogaCleared')==='Yes') dailyPlan.push({id:'activity-yoga',block:'Activity',cat:'activity',text:'Yoga or exercise cleared by the treating clinician',note:val('activityNote')||''});
+    const avoid=lines(val('foodAvoid'));
+    const extra=lines(val('customDos'));
+    return {
+      version:1,
+      createdAt:new Date().toISOString(),
+      profile:{
+        displayName:val('herName') ? val('herName')+' Pregnancy Dashboard' : 'Pregnancy Dashboard',
+        expectedDate:val('edd'),
+        proteinTarget:val('proteinTarget'), waterTarget:val('waterTarget'),
+        kickMethod:getRadio('hasKickMethod')==='Yes' ? val('kickMethod') : '',
+        medicalDisclaimer:'This dashboard organises information supplied by you. It is not medical advice. Confirm medicines, diet, movement targets and symptoms with the treating clinician.'
+      },
+      dailyPlan,
+      dos:extra.filter(x=>!/^avoid\b|^do not\b|^don.t\b/i.test(x)),
+      donts:avoid.concat(extra.filter(x=>/^avoid\b|^do not\b|^don.t\b/i.test(x))),
+      questions:qs,
+      mealOptions:{breakfast:lines(val('breakfastOptions')),lunchDinner:lines(val('lunchOptions')).concat(lines(val('dinnerOptions')))},
+      startingWeight:val('startWeight') ? Number(val('startWeight')) : null
+    };
+  }
+  document.getElementById('configBtn').addEventListener('click',()=>{
+    const config=buildAppConfig();
+    if(!config.profile.expectedDate){ alert('Add the expected delivery date before creating the app setup.'); return; }
+    const blob=new Blob([JSON.stringify(config,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    const slug=(val('herName')||'personal').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    a.href=url; a.download=(slug||'personal')+'-pregnancy-dashboard-config.json';
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
+  });
+
+  // ---------- draft persistence (per-device only) ----------
+  function saveDraft(){
+    try{
+      const data = {
+        values: {}, radios: {}, checks: {}, meds: [], qs: []
+      };
+      form.querySelectorAll('input[type=text], input[type=number], input[type=date], textarea').forEach(f=>{ data.values[f.name] = f.value; });
+      form.querySelectorAll('input[type=radio]:checked').forEach(r=>{ data.radios[r.name] = r.value; });
+      form.querySelectorAll('input[type=checkbox]:checked').forEach(c=>{ data.checks[c.name] = data.checks[c.name]||[]; data.checks[c.name].push(c.value); });
+      document.querySelectorAll('#medRows .repeat-row').forEach(row=>{
+        data.meds.push({name:row.querySelector('.med-name').value, dose:row.querySelector('.med-dose').value, time:row.querySelector('.med-time').value});
+      });
+      document.querySelectorAll('#qRows .repeat-row').forEach(row=>{ data.qs.push(row.querySelector('.q-text').value); });
+      localStorage.setItem('pd_intake_draft', JSON.stringify(data));
+    }catch(e){ console.error('draft save failed', e); }
+  }
+  function loadDraft(){
+    try{
+      const raw = localStorage.getItem('pd_intake_draft');
+      if(!raw) return;
+      const data = JSON.parse(raw);
+      Object.keys(data.values||{}).forEach(name=>{
+        const el = form.querySelector('[name="'+name+'"]');
+        if(el) el.value = data.values[name];
+      });
+      Object.keys(data.radios||{}).forEach(name=>{
+        const el = form.querySelector('input[name="'+name+'"][value="'+CSS.escape(data.radios[name])+'"]');
+        if(el){ el.checked = true; el.closest('.choice').classList.add('checked'); }
+      });
+      Object.keys(data.checks||{}).forEach(name=>{
+        (data.checks[name]||[]).forEach(v=>{
+          const el = form.querySelector('input[name="'+name+'"][value="'+CSS.escape(v)+'"]');
+          if(el){ el.checked = true; el.closest('.choice').classList.add('checked'); }
+        });
+      });
+      document.getElementById('medRows').innerHTML = '';
+      (data.meds && data.meds.length ? data.meds : [{},{}]).forEach(m=> addMedRow(m));
+      document.getElementById('qRows').innerHTML = '';
+      (data.qs && data.qs.length ? data.qs.map(t=>({text:t})) : [{},{}]).forEach(q=> addQRow(q));
+      toggleMealPlan();
+    }catch(e){ console.error('draft load failed', e); }
+  }
+
+  // re-init: clear the two seed rows created earlier, then load draft (which reseeds appropriately)
+  document.getElementById('medRows').innerHTML = '';
+  document.getElementById('qRows').innerHTML = '';
+  loadDraft();
+  if(!document.querySelectorAll('#medRows .repeat-row').length){ addMedRow(); addMedRow(); }
+  if(!document.querySelectorAll('#qRows .repeat-row').length){ addQRow(); addQRow(); }
+
+  updateProgress();
+})();
+</script>
+</body>
+</html>

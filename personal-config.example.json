@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "profile": {
+    "displayName": "Pregnancy Dashboard",
+    "expectedDate": "",
+    "medicalDisclaimer": "This dashboard organises information supplied by you. It is not medical advice. Confirm medicines, diet, movement targets and symptoms with the treating clinician."
+  },
+  "dailyPlan": [],
+  "dos": [],
+  "donts": [],
+  "questions": [],
+  "mealOptions": {
+    "breakfast": [],
+    "lunchDinner": []
+  }
+}

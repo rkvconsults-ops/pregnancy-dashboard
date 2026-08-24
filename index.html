@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Pregnancy Dashboard</title>
+
+<!-- PWA / installable -->
+<meta name="theme-color" content="#1F4A42">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pregnancy">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+<style>
+  :root{
+    --bg:#F4F6F5;
+    --surface:#FFFFFF;
+    --ink:#1D2A27;
+    --ink-soft:#586A64;
+    --ink-faint:#8A968F;
+    --accent:#2F7D6E;
+    --accent-deep:#1F4A42;
+    --accent-soft:#EAF2EF;
+    --amber:#9A6B1F;
+    --amber-soft:#F6EEDD;
+    --alert:#B23A2E;
+    --alert-bg:#FBEDEB;
+    --alert-border:#F0CFC9;
+    --line:#E7EBE8;
+    --line-soft:#EEF1EF;
+    --good:#3E8E6E;
+    --shadow:0 1px 2px rgba(29,42,39,0.04), 0 4px 16px rgba(29,42,39,0.05);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    padding:24px 16px calc(48px + env(safe-area-inset-bottom));
+  }
+  a{color:var(--accent);}
+  ::selection{background:var(--accent); color:#fff;}
+  :focus-visible{outline:2.5px solid var(--accent); outline-offset:2px; border-radius:6px;}
+
+  .wrap{max-width:1000px; margin:0 auto;}
+
+  button{font-family:inherit;}
+
+  /* ---------- Hero ---------- */
+  .hero{
+    background:linear-gradient(160deg, var(--accent-deep), var(--accent) 90%);
+    color:#EAF2EF;
+    border-radius:18px;
+    padding:26px 26px 22px;
+    box-shadow:var(--shadow);
+  }
+  .hero-head{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px;}
+  .hero-title{font-size:15px; font-weight:600; letter-spacing:0.02em; opacity:0.9; margin:0 0 0 auto;}
+  .install-btn{
+    display:inline-flex; align-items:center; gap:7px;
+    background:rgba(255,255,255,0.15); color:#fff; border:1px solid rgba(255,255,255,0.35);
+    border-radius:999px; padding:7px 14px; font-size:12.5px; font-weight:600; cursor:pointer;
+    white-space:nowrap;
+  }
+  .install-btn:hover{background:rgba(255,255,255,0.25);}
+  .install-btn.hidden{display:none;}
+
+  /* ---------- Install help modal ---------- */
+  .ih-overlay{
+    position:fixed; inset:0; background:rgba(15,30,27,0.55); z-index:1000;
+    display:none; align-items:center; justify-content:center; padding:18px;
+    -webkit-backdrop-filter:blur(2px); backdrop-filter:blur(2px);
+  }
+  .ih-overlay.show{display:flex;}
+  .ih-modal{
+    background:var(--surface); border-radius:18px; max-width:420px; width:100%;
+    padding:24px 22px 22px; box-shadow:0 12px 40px rgba(0,0,0,0.28); position:relative;
+    max-height:90vh; overflow:auto;
+  }
+  .ih-close{
+    position:absolute; top:12px; right:12px; background:none; border:none; font-size:24px; line-height:1;
+    color:var(--ink-faint); cursor:pointer; padding:4px 8px; border-radius:8px;
+  }
+  .ih-close:hover{color:var(--ink); background:var(--bg);}
+  .ih-modal h3{font-size:18px; font-weight:700; margin:0 6px 4px 0; color:var(--ink);}
+  .ih-sub{font-size:12.5px; color:var(--ink-soft); margin-bottom:16px; line-height:1.5;}
+  .ih-steps{list-style:none; margin:0; padding:0; counter-reset:ih;}
+  .ih-steps li{
+    position:relative; padding:10px 0 10px 40px; font-size:14px; color:var(--ink);
+    border-bottom:1px solid var(--line-soft); line-height:1.5;
+  }
+  .ih-steps li:last-child{border-bottom:none;}
+  .ih-steps li::before{
+    counter-increment:ih; content:counter(ih);
+    position:absolute; left:0; top:9px; width:26px; height:26px; border-radius:50%;
+    background:var(--accent-soft); color:var(--accent-deep); font-size:13px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .ih-glyph{display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:5px; background:var(--accent-soft); color:var(--accent-deep); font-weight:700; vertical-align:-5px; margin:0 2px;}
+  .ih-note{font-size:12.5px; color:var(--amber); background:var(--amber-soft); border-radius:10px; padding:10px 12px; margin-top:14px; line-height:1.5;}
+  .ih-ok{background:var(--accent); color:#fff; border:none; border-radius:10px; padding:12px 18px; font-size:14px; font-weight:700; cursor:pointer; width:100%; margin-top:16px;}
+  .ih-ok:hover{background:var(--accent-deep);}
+
+  .hero-top{display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:22px 32px;}
+  .hero-week{display:flex; align-items:baseline; gap:12px;}
+  .hero-week .num{font-size:clamp(48px,10vw,72px); font-weight:700; line-height:0.9; letter-spacing:-0.03em;}
+  .hero-week .label{font-size:16px; font-weight:500; opacity:0.9;}
+  .hero-date{font-size:12.5px; opacity:0.82; margin-top:8px; letter-spacing:0.01em;}
+
+  .hero-stats{display:flex; gap:26px; flex-wrap:wrap;}
+  .hero-stat .v{font-size:17px; font-weight:600; display:block; letter-spacing:-0.01em;}
+  .hero-stat .k{font-size:10.5px; text-transform:uppercase; letter-spacing:0.09em; opacity:0.8; margin-top:1px;}
+
+  .week-strip{margin-top:22px;}
+  .week-strip .segs{display:flex; gap:2px;}
+  .week-strip .seg{flex:1; height:6px; border-radius:99px; background:rgba(255,255,255,0.18);}
+  .week-strip .seg.filled{background:rgba(255,255,255,0.55);}
+  .week-strip .seg.current{background:#F2C879;}
+  .week-strip .marks{display:flex; justify-content:space-between; margin-top:8px; font-size:10.5px; opacity:0.72; letter-spacing:0.03em;}
+  .hero-note{margin-top:16px; font-size:12px; opacity:0.78; max-width:600px; line-height:1.5;}
+
+  /* ---------- Red flag ---------- */
+  .redflag{
+    margin-top:14px; background:var(--alert-bg); border:1px solid var(--alert-border);
+    border-radius:14px; padding:14px 18px;
+  }
+  .redflag summary{
+    cursor:pointer; list-style:none; display:flex; align-items:center; gap:10px;
+    font-weight:600; color:var(--alert); font-size:14px;
+  }
+  .redflag summary::-webkit-details-marker{display:none;}
+  .redflag summary::before{
+    content:"!"; display:inline-flex; align-items:center; justify-content:center;
+    width:19px; height:19px; border-radius:50%; background:var(--alert); color:#fff;
+    font-size:12px; font-weight:700; flex:none;
+  }
+  .redflag summary .chev{margin-left:auto; font-size:11px; opacity:0.7; transition:transform .2s ease;}
+  .redflag[open] summary .chev{transform:rotate(180deg);}
+  .redflag .rf-list{
+    margin:14px 0 2px; padding:0; list-style:none;
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:6px 18px;
+  }
+  .redflag .rf-list li{font-size:13px; color:#5A2A23; padding-left:15px; position:relative;}
+  .redflag .rf-list li::before{content:""; position:absolute; left:2px; top:9px; width:5px; height:5px; border-radius:50%; background:var(--alert);}
+  .redflag .rf-foot{font-size:12px; color:#6B342C; margin-top:12px;}
+
+  /* ---------- Grid / Cards ---------- */
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px;}
+  .col-full{grid-column:1 / -1;}
+  @media (max-width:780px){ .grid{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--surface); border:1px solid var(--line);
+    border-radius:16px; padding:22px; box-shadow:var(--shadow);
+  }
+  .card h2{
+    font-size:16px; font-weight:700; margin:0 0 3px; color:var(--ink);
+    letter-spacing:-0.01em; display:flex; align-items:center; gap:8px;
+  }
+  .card .sub{font-size:12.5px; color:var(--ink-soft); margin-bottom:16px; line-height:1.5;}
+
+  /* progress */
+  .progress-row{display:flex; align-items:center; gap:12px; margin-bottom:12px;}
+  .progress-track{flex:1; height:7px; background:var(--line); border-radius:99px; overflow:hidden;}
+  .progress-fill{height:100%; background:var(--good); border-radius:99px; transition:width .25s ease;}
+  .progress-count{font-size:12px; color:var(--ink-soft); white-space:nowrap; font-weight:600; font-variant-numeric:tabular-nums;}
+  .protein-goal{font-size:12px; color:var(--ink-soft); margin:0 0 16px; line-height:1.5;}
+  .protein-goal strong{color:var(--accent-deep);}
+
+  /* menu editor */
+  .menu-editor, .history-toggle{
+    border:1px solid var(--line); border-radius:12px; padding:0 14px 4px;
+    background:var(--accent-soft); margin:4px 0 18px;
+  }
+  .history-toggle{margin:4px 0 0;}
+  .menu-editor summary, .history-toggle summary{
+    cursor:pointer; list-style:none; font-size:12.5px; font-weight:600; color:var(--accent-deep); padding:11px 0;
+    display:flex; align-items:center; gap:8px;
+  }
+  .menu-editor summary::-webkit-details-marker, .history-toggle summary::-webkit-details-marker{display:none;}
+  .menu-editor summary .em, .history-toggle summary .em{opacity:0.9;}
+  .menu-sub{margin-top:8px;}
+  .menu-sub-title{font-size:10.5px; font-weight:700; color:var(--amber); text-transform:uppercase; letter-spacing:0.07em; margin-bottom:5px;}
+  .menu-row{display:grid; grid-template-columns:36px 1fr; gap:8px; align-items:center; padding:3px 0;}
+  .menu-row .menu-day{font-size:11.5px; font-weight:700; color:var(--ink-soft);}
+  .menu-row select{
+    width:100%; font-size:12.5px; padding:6px 8px; border:1px solid var(--line); border-radius:8px;
+    background:#fff; color:var(--ink); font-family:inherit;
+  }
+  .menu-hint{font-size:11.5px; color:var(--ink-soft); margin:10px 0 6px; font-style:italic;}
+
+  /* history */
+  .history-day{border-bottom:1px solid var(--line-soft); padding:8px 0;}
+  .history-day:last-child{border-bottom:none;}
+  .history-day summary{cursor:pointer; list-style:none; display:flex; align-items:center; gap:12px;}
+  .history-day summary::-webkit-details-marker{display:none;}
+  .history-day .hd-date{font-size:12.5px; font-weight:700; width:66px; flex:none;}
+  .history-day .hd-track{flex:1; height:7px; background:var(--line); border-radius:99px; overflow:hidden;}
+  .history-day .hd-fill{height:100%; border-radius:99px;}
+  .history-day .hd-fill.good{background:var(--good);}
+  .history-day .hd-fill.mid{background:#C9962F;}
+  .history-day .hd-fill.low{background:#B76A4A;}
+  .history-day .hd-count{font-size:11.5px; color:var(--ink-soft); width:44px; text-align:right; flex:none; font-weight:600; font-variant-numeric:tabular-nums;}
+  .history-items{margin-top:8px; padding-left:2px;}
+  .history-items .hi-row{display:flex; align-items:flex-start; gap:8px; padding:4px 0; font-size:12.5px;}
+  .history-items .hi-row .hi-mark{width:15px; flex:none; font-weight:700;}
+  .history-items .hi-row.done .hi-mark{color:var(--good);}
+  .history-items .hi-row.missed .hi-mark{color:var(--ink-faint);}
+  .history-items .hi-row.missed .hi-txt{color:var(--ink-faint);}
+  .history-empty{font-size:12.5px; color:var(--ink-soft); font-style:italic; padding:10px 2px;}
+
+  /* checklist */
+  .block-title{
+    font-size:11px; text-transform:uppercase; letter-spacing:0.09em;
+    color:var(--amber); font-weight:700; margin:18px 0 6px;
+  }
+  .block-title:first-of-type{margin-top:2px;}
+  .block-sub{font-size:11px; color:var(--ink-faint); font-weight:500; text-transform:none; letter-spacing:0; margin-left:6px;}
+  .item{display:flex; align-items:flex-start; gap:11px; padding:9px 6px; border-radius:10px;}
+  .item:hover{background:var(--accent-soft);}
+  .item input[type=checkbox]{margin-top:2px; width:19px; height:19px; accent-color:var(--accent); flex:none; cursor:pointer;}
+  .item label{cursor:pointer; flex:1;}
+  .item .txt{font-size:14px; color:var(--ink);}
+  .item.checked .txt{color:var(--ink-faint); text-decoration:line-through; text-decoration-color:var(--ink-faint);}
+  .item .note{font-size:12px; color:var(--amber); margin-top:3px; line-height:1.45;}
+  .tag{
+    display:inline-block; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.03em;
+    padding:2px 7px; border-radius:99px; margin-left:8px; vertical-align:1.5px;
+  }
+  .tag.diet{background:var(--amber-soft); color:var(--amber);}
+  .tag.med{background:var(--accent-soft); color:var(--accent-deep);}
+  .tag.activity{background:#E9F0E5; color:#3F6238;}
+  .tag.check{background:#F3E5E1; color:#9A4B37;}
+  .protein-badge{
+    display:inline-block; font-size:10px; font-weight:700;
+    padding:2px 7px; border-radius:99px; margin-left:6px; vertical-align:1.5px;
+    background:#E6F0EA; color:#2E6A4E;
+  }
+
+  /* kick counter */
+  .kick-main{display:flex; align-items:baseline; gap:10px; margin:6px 0 2px;}
+  .kick-count{font-size:52px; font-weight:700; line-height:1; color:var(--accent-deep); letter-spacing:-0.03em; font-variant-numeric:tabular-nums;}
+  .kick-unit{font-size:13px; color:var(--ink-soft); font-weight:500;}
+  .kick-actions{display:flex; gap:8px; flex-wrap:wrap; margin:16px 0 4px;}
+  .btn-primary{
+    background:var(--accent); color:#fff; border:none; border-radius:10px;
+    padding:12px 18px; font-size:14px; font-weight:700; cursor:pointer; flex:1; min-width:150px;
+  }
+  .btn-primary:hover{background:var(--accent-deep);}
+  .btn-primary:active{transform:translateY(1px);}
+  .btn-ghost{
+    background:#fff; color:var(--ink-soft); border:1px solid var(--line);
+    border-radius:10px; padding:12px 14px; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .btn-ghost:hover{background:var(--bg); color:var(--ink);}
+  .kick-mini{font-size:12px; color:var(--ink-soft); margin-top:12px; display:flex; flex-wrap:wrap; gap:4px 14px;}
+  .kick-mini span b{color:var(--ink); font-weight:600; font-variant-numeric:tabular-nums;}
+
+  /* weight log */
+  .weight-input{display:flex; gap:8px; margin-bottom:14px;}
+  .weight-input input{
+    flex:1; padding:11px 12px; border:1px solid var(--line); border-radius:10px;
+    font-family:inherit; font-size:14px; background:#fff; color:var(--ink);
+  }
+  .weight-input input:focus{border-color:var(--accent);}
+  .weight-input button{
+    background:var(--accent); color:#fff; border:none; border-radius:10px;
+    padding:0 18px; font-size:13.5px; font-weight:700; cursor:pointer; white-space:nowrap;
+  }
+  .weight-input button:hover{background:var(--accent-deep);}
+  .weight-summary{display:flex; align-items:baseline; gap:10px; margin-bottom:6px;}
+  .weight-latest{font-size:30px; font-weight:700; color:var(--accent-deep); letter-spacing:-0.02em; font-variant-numeric:tabular-nums;}
+  .weight-latest small{font-size:15px; font-weight:600; color:var(--ink-soft);}
+  .weight-delta{font-size:12.5px; font-weight:600;}
+  .weight-delta.up{color:var(--good);} .weight-delta.down{color:#B76A4A;} .weight-delta.flat{color:var(--ink-soft);}
+  .weight-spark{margin:10px 0 4px;}
+  .weight-list{margin-top:10px; max-height:170px; overflow:auto;}
+  .weight-row{display:flex; align-items:center; gap:10px; padding:7px 2px; border-bottom:1px solid var(--line-soft); font-size:13px;}
+  .weight-row:last-child{border-bottom:none;}
+  .weight-row .wr-date{color:var(--ink-soft); width:78px; flex:none;}
+  .weight-row .wr-kg{font-weight:600; flex:1; font-variant-numeric:tabular-nums;}
+  .weight-row .wr-del{background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:16px; line-height:1; padding:2px 6px; border-radius:6px;}
+  .weight-row .wr-del:hover{color:var(--alert); background:var(--alert-bg);}
+  .weight-empty{font-size:12.5px; color:var(--ink-soft); font-style:italic; padding:6px 2px;}
+
+  /* do / don't */
+  .dd-grid{display:grid; grid-template-columns:1fr 1fr; gap:0 22px;}
+  @media (max-width:520px){ .dd-grid{grid-template-columns:1fr; gap:0;} }
+  .dd-col h3{font-size:11.5px; text-transform:uppercase; letter-spacing:0.07em; margin:0 0 8px; font-weight:700;}
+  .dd-col.do h3{color:var(--good);}
+  .dd-col.dont h3{color:#B76A4A;}
+  .dd-col ul{list-style:none; margin:0 0 8px; padding:0;}
+  .dd-col li{font-size:13px; padding:6px 0 6px 22px; position:relative; border-bottom:1px solid var(--line-soft); line-height:1.45;}
+  .dd-col li:last-child{border-bottom:none;}
+  .dd-col.do li::before{content:"✓"; position:absolute; left:2px; color:var(--good); font-weight:700;}
+  .dd-col.dont li::before{content:"✕"; position:absolute; left:2px; color:#B76A4A; font-weight:700;}
+
+  /* questions */
+  .q-add{display:flex; gap:8px; margin-bottom:14px;}
+  .q-add input[type=text]{
+    flex:1; padding:11px 12px; border:1px solid var(--line); border-radius:10px;
+    font-family:inherit; font-size:13.5px; background:#fff; color:var(--ink);
+  }
+  .q-add input[type=text]:focus{border-color:var(--accent);}
+  .q-add button{background:var(--accent); color:#fff; border:none; border-radius:10px; padding:0 18px; font-size:13.5px; font-weight:700; cursor:pointer;}
+  .q-add button:hover{background:var(--accent-deep);}
+  .q-list{list-style:none; margin:0; padding:0;}
+  .q-item{display:flex; align-items:flex-start; gap:10px; padding:9px 4px; border-bottom:1px solid var(--line-soft);}
+  .q-item:last-child{border-bottom:none;}
+  .q-item input[type=checkbox]{margin-top:2px; width:18px; height:18px; accent-color:var(--accent); cursor:pointer; flex:none;}
+  .q-item .qtxt{flex:1; font-size:13.5px;}
+  .q-item.asked .qtxt{color:var(--ink-faint); text-decoration:line-through;}
+  .q-item .del{background:none; border:none; color:var(--ink-faint); cursor:pointer; font-size:16px; line-height:1; padding:2px 5px; flex:none; border-radius:6px;}
+  .q-item .del:hover{color:var(--alert); background:var(--alert-bg);}
+  .q-empty{font-size:12.5px; color:var(--ink-soft); font-style:italic; padding:10px 4px;}
+
+  .footnote{max-width:1000px; margin:22px auto 0; font-size:11.5px; color:var(--ink-faint); text-align:center; padding:0 12px; line-height:1.6;}
+
+  /* ---------- Sync ---------- */
+  .sync-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
+  .sync-dot{width:9px; height:9px; border-radius:50%; background:var(--ink-faint); flex:none;}
+  .sync-dot.ok{background:var(--good);}
+  .sync-dot.busy{background:var(--amber); animation:syncPulse 1s ease-in-out infinite;}
+  .sync-dot.err{background:var(--alert);}
+  @keyframes syncPulse{0%,100%{opacity:1;} 50%{opacity:0.35;}}
+  .sync-status-text{font-size:13px; color:var(--ink-soft); font-weight:600;}
+  .sync-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
+  .sync-code-box{
+    margin-top:14px; background:var(--accent-soft); border:1px solid var(--line); border-radius:12px;
+    padding:14px 16px;
+  }
+  .sync-code-value{
+    font-family:'SFMono-Regular', Menlo, Consolas, monospace; font-size:14px; font-weight:700; color:var(--accent-deep);
+    word-break:break-all; user-select:all; background:#fff; border:1px solid var(--line); border-radius:8px;
+    padding:9px 11px; margin:8px 0;
+  }
+  .sync-hint{font-size:12px; color:var(--ink-soft); line-height:1.5;}
+  .sync-enter-row{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;}
+  .sync-enter-row input{
+    flex:1; min-width:200px; padding:11px 12px; border:1px solid var(--line); border-radius:10px;
+    font-family:'SFMono-Regular', Menlo, Consolas, monospace; font-size:13px; background:#fff; color:var(--ink);
+  }
+  .sync-enter-row input:focus{border-color:var(--accent);}
+  .sync-msg{font-size:12.5px; margin-top:8px; display:none;}
+  .sync-msg.show{display:block;}
+  .sync-msg.err{color:var(--alert);}
+  .sync-msg.ok{color:var(--good);}
+  .sync-toggle-link{background:none; border:none; color:var(--accent); font-size:12.5px; font-weight:600; cursor:pointer; padding:2px 0; text-decoration:underline;}
+  .sync-help{margin-top:10px; background:var(--accent-soft); border:1px solid var(--line); border-radius:12px; padding:0 14px;}
+  .sync-help summary{cursor:pointer; list-style:none; font-size:12.5px; font-weight:600; color:var(--accent-deep); padding:11px 0;}
+  .sync-help summary::-webkit-details-marker{display:none;}
+  .sync-help summary::before{content:"❔"; margin-right:7px;}
+  .sync-help-steps{margin:2px 0 12px; padding-left:20px; font-size:13px; color:var(--ink); line-height:1.55;}
+  .sync-help-steps li{margin-bottom:6px;}
+  .sync-rules{background:#0F2622; color:#CFE6DE; border-radius:8px; padding:10px 12px; font-family:'SFMono-Regular', Menlo, Consolas, monospace; font-size:11.5px; line-height:1.5; margin:8px 0 4px; overflow:auto; white-space:pre; user-select:all;}
+  .sync-panel{display:none;}
+  .sync-panel.show{display:block;}
+  .data-actions{display:flex; gap:9px; flex-wrap:wrap; margin-top:12px;}
+  .data-actions input[type=file]{display:none;}
+  .privacy-copy{font-size:12.5px; color:var(--ink-soft); line-height:1.55; margin-top:10px;}
+  .danger-btn{border-color:var(--alert-border)!important; color:var(--alert)!important;}
+  .backup-state{font-size:12px; color:var(--ink-soft); margin-top:9px;}
+  .sync-qr{width:210px; max-width:100%; margin:12px 0; padding:10px; background:#fff; border:1px solid var(--line); border-radius:10px;}
+  .sync-qr svg{display:block; width:100%; height:auto;}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="hero-head">
+      <button class="install-btn" id="installBtn" type="button">＋ Add to Home Screen</button>
+      <p class="hero-title" id="dashboardTitle">Pregnancy Dashboard</p>
+    </div>
+    <div class="hero-top">
+      <div>
+        <div class="hero-week">
+          <span class="num" id="gaWeeks">--</span>
+          <span class="label" id="gaLabel">weeks</span>
+        </div>
+        <div class="hero-date" id="todayStr"></div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><span class="v" id="daysToGo">--</span><span class="k">days to EDD</span></div>
+        <div class="hero-stat"><span class="v" id="eddDisplay">Setup needed</span><span class="k">expected date</span></div>
+        <div class="hero-stat"><span class="v" id="trimester">--</span><span class="k">trimester</span></div>
+      </div>
+    </div>
+    <div class="week-strip">
+      <div class="segs" id="weekSegs"></div>
+      <div class="marks"><span>Week 1</span><span>1st</span><span>2nd</span><span>3rd</span><span>Week 40</span></div>
+    </div>
+    <div class="hero-note">Calculated from the expected date of delivery you shared. This is an approximation for everyday tracking — your doctor's scan-based dating is the one that counts clinically.</div>
+  </div>
+
+  <details class="redflag" id="rfDetails">
+    <summary>Call your doctor right away if any of these happen <span class="chev">▾</span></summary>
+    <ul class="rf-list">
+      <li>Reduced or no fetal movement</li>
+      <li>Persistent or heavy bleeding</li>
+      <li>Fluid leakage</li>
+      <li>Severe headache or blurred vision</li>
+      <li>Persistent abdominal pain</li>
+      <li>High fever</li>
+      <li>Convulsions</li>
+      <li>Difficulty breathing</li>
+    </ul>
+    <div class="rf-foot">Don't wait for the next scheduled visit for any of these — contact your obstetrician directly.</div>
+  </details>
+
+  <div class="grid">
+
+    <div class="card col-full" id="todayCard">
+      <h2>Today's plan</h2>
+      <div class="sub">Diet, medicines and activity, in the order of your day. Resets fresh each morning.</div>
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
+        <div class="progress-count" id="progCount">0 / 0 done</div>
+      </div>
+      <div class="protein-goal" id="proteinGoal" hidden></div>
+
+      <details class="menu-editor" id="menuEditor">
+        <summary><span class="em">🍽</span> This week's breakfast, lunch &amp; dinner — tap to set or edit</summary>
+        <div class="menu-sub"><div class="menu-sub-title">Breakfast</div><div id="menuRowsBreakfast"></div></div>
+        <div class="menu-sub"><div class="menu-sub-title">Lunch — main dish</div><div id="menuRowsLunch"></div></div>
+        <div class="menu-sub"><div class="menu-sub-title">Dinner — main dish</div><div id="menuRowsDinner"></div></div>
+        <div class="menu-hint">Pick "+ Add custom dish…" in any dropdown to type your own — it's saved and shows up as an option everywhere after that.</div>
+      </details>
+
+      <div id="checklistHost"></div>
+    </div>
+
+    <div class="card" id="kickCard">
+      <h2>Kick counter</h2>
+      <div class="sub">Tap each time you feel a distinct movement. Resets each day. Follow the counting method and target your doctor recommends.</div>
+      <div class="kick-main">
+        <span class="kick-count" id="kickCount">0</span>
+        <span class="kick-unit">movements<br>today</span>
+      </div>
+      <div class="kick-actions">
+        <button class="btn-primary" id="kickAdd" type="button">＋ Log a movement</button>
+        <button class="btn-ghost" id="kickUndo" type="button">Undo</button>
+        <button class="btn-ghost" id="kickReset" type="button">Reset</button>
+      </div>
+      <div class="kick-mini" id="kickMini"></div>
+    </div>
+
+    <div class="card" id="weightCard">
+      <h2>Weight log</h2>
+      <div class="sub">Note your weight when you weigh in — once a week is usually enough unless your doctor asks for more.</div>
+      <div class="weight-input">
+        <input type="number" id="weightInput" inputmode="decimal" step="0.1" min="0" max="300" placeholder="Weight in kg">
+        <button id="weightSave" type="button">Save</button>
+      </div>
+      <div id="weightBody"></div>
+    </div>
+
+    <div class="card col-full" id="historyCard">
+      <h2>History</h2>
+      <div class="sub">A record of every day, so you can see what got missed and when.</div>
+      <details class="history-toggle" id="historyToggle">
+        <summary><span class="em">📅</span> View history</summary>
+        <div id="historyList"></div>
+      </details>
+    </div>
+
+    <div class="card" id="dosCard">
+      <h2>Do's &amp; don'ts</h2>
+      <div class="sub">General guidance from your notes — always defer to what your obstetrician has told you personally.</div>
+      <div class="dd-grid">
+        <div class="dd-col do"><h3>Do</h3><ul id="doList"></ul></div>
+        <div class="dd-col dont"><h3>Don't</h3><ul id="dontList"></ul></div>
+      </div>
+    </div>
+
+    <div class="card" id="questionsCard">
+      <h2>Questions for the next visit</h2>
+      <div class="sub">Add anything as it comes to mind through the week — check it off once your doctor has answered it.</div>
+      <div class="q-add">
+        <input type="text" id="qInput" placeholder="Type a question and press Enter…">
+        <button id="qAddBtn" type="button">Add</button>
+      </div>
+      <ul class="q-list" id="qList"></ul>
+    </div>
+
+    <div class="card col-full" id="dataCard">
+      <h2>Private sync, backup &amp; recovery</h2>
+      <div class="sub">Your health information stays encrypted during sync. GitHub contains app code only, never your entries.</div>
+
+      <div id="syncInsecurePanel" class="sync-panel">
+        <p class="privacy-copy">Open the secure HTTPS app link to use encrypted device sync.</p>
+      </div>
+
+      <div id="syncSetupPanel">
+        <div class="sync-enter-row">
+          <button class="btn-primary" id="syncStartBtn" type="button">Create private sync</button>
+        </div>
+        <button class="sync-toggle-link" id="syncHaveCodeToggle" type="button">Connect this device with a recovery code</button>
+        <div class="sync-panel" id="syncEnterPanel">
+          <div class="sync-enter-row">
+            <input id="syncCodeInput" type="password" autocomplete="off" placeholder="Paste recovery code">
+            <button class="btn-primary" id="syncConnectBtn" type="button">Connect</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="sync-panel" id="syncConnectedPanel">
+        <div class="sync-row"><span class="sync-dot" id="syncDot"></span><span class="sync-status-text" id="syncStatusText">Checking sync…</span></div>
+        <p class="privacy-copy">Use this recovery code only on trusted devices. It contains the encryption secret.</p>
+        <div class="sync-qr" id="syncQr" aria-label="Recovery QR code"></div>
+        <div class="sync-code-box"><code class="sync-code-value" id="syncCodeDisplay"></code></div>
+        <div class="sync-actions">
+          <button class="btn-primary" id="syncCopyBtn" type="button">Copy recovery code</button>
+          <button class="btn-ghost" id="syncNowBtn" type="button">Sync now</button>
+          <button class="btn-ghost" id="syncUnlinkBtn" type="button">Unlink this device</button>
+        </div>
+      </div>
+      <div class="sync-msg" id="syncMsg" role="status" aria-live="polite"></div>
+
+      <div class="data-actions">
+        <button class="btn-ghost" id="configImportBtn" type="button">Import personalised setup</button>
+        <input id="configFile" type="file" accept="application/json,.json">
+        <button class="btn-ghost" id="backupBtn" type="button">Download encrypted backup</button>
+        <button class="btn-ghost" id="restoreBtn" type="button">Restore backup</button>
+        <input id="restoreFile" type="file" accept="application/json,.json">
+        <button class="btn-ghost danger-btn" id="deleteLocalBtn" type="button">Delete this device's data</button>
+        <button class="btn-ghost danger-btn" id="deleteEverywhereBtn" type="button">Delete everywhere</button>
+      </div>
+      <div class="backup-state" id="backupState">No backup created on this device yet.</div>
+    </div>
+  </div>
+
+  <div class="ih-overlay" id="ihOverlay">
+    <div class="ih-modal">
+      <button class="ih-close" id="ihClose" type="button" aria-label="Close">×</button>
+      <h3 id="ihTitle">Add to Home Screen</h3>
+      <div class="ih-sub" id="ihSub"></div>
+      <ol class="ih-steps" id="ihSteps"></ol>
+      <div class="ih-note" id="ihNote" style="display:none;"></div>
+      <button class="ih-ok" id="ihOk" type="button">Got it</button>
+    </div>
+  </div>
+
+  <div class="footnote" id="medicalDisclaimer">This dashboard organises information supplied by you. It is not medical advice. Confirm medicines, diet, movement targets and symptoms with the treating clinician. Entries are stored on this device and are only shared as encrypted data when private sync is enabled.</div>
+</div>
+
+<script src="qrcode-generator.js"></script>
+<script src="app-core.js"></script>
+<script src="sync-config.js"></script>
+<script>
+(async function(){
+  // ---------- Gestational age ----------
+  let EDD = null;
+  function today0(){ const d=new Date(); d.setHours(0,0,0,0); return d; }
+  function computeGA(){
+    if(!(EDD instanceof Date) || isNaN(EDD.getTime())) return null;
+    const now = today0();
+    const edd = new Date(EDD); edd.setHours(0,0,0,0);
+    const msDay = 86400000;
+    const daysToEDD = Math.round((edd - now)/msDay);
+    const gaDays = 280 - daysToEDD;
+    const weeks = Math.max(0, Math.floor(gaDays/7));
+    const days = Math.max(0, gaDays % 7);
+    return {weeks, days, daysToEDD, gaDays};
+  }
+  function trimesterOf(weeks){ if(weeks < 13) return '1st'; if(weeks < 27) return '2nd'; return '3rd'; }
+  function renderHero(){
+    const ga = computeGA();
+    if(!ga){
+      document.getElementById('gaWeeks').textContent='--';
+      document.getElementById('gaLabel').textContent='setup required';
+      document.getElementById('daysToGo').textContent='--';
+      document.getElementById('trimester').textContent='--';
+      document.getElementById('todayStr').textContent=today0().toLocaleDateString('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+      document.getElementById('weekSegs').innerHTML='';
+      return;
+    }
+    document.getElementById('gaWeeks').textContent = ga.weeks;
+    document.getElementById('gaLabel').textContent = 'weeks + ' + ga.days + ' day' + (ga.days===1?'':'s');
+    document.getElementById('daysToGo').textContent = ga.daysToEDD >= 0 ? ga.daysToEDD : 'past due';
+    document.getElementById('trimester').textContent = trimesterOf(ga.weeks);
+    document.getElementById('todayStr').textContent = today0().toLocaleDateString('en-IN',{weekday:'long', day:'numeric', month:'long', year:'numeric'});
+    const segs = document.getElementById('weekSegs');
+    segs.innerHTML = '';
+    for(let i=1;i<=40;i++){
+      const s = document.createElement('div');
+      s.className = 'seg' + (i < ga.weeks ? ' filled' : '') + (i === ga.weeks ? ' current' : '');
+      s.title = 'Week ' + i;
+      segs.appendChild(s);
+    }
+  }
+
+  function localDateKey(){
+    const d = new Date();
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+    return y+'-'+m+'-'+day;
+  }
+  function todayAbbr(){ return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][new Date().getDay()]; }
+  function formatDateLabel(dateKey){
+    const d = new Date(dateKey + 'T00:00:00');
+    return d.toLocaleDateString('en-IN', {day:'numeric', month:'short'});
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function escapeAttr(s){ return String(s).replace(/"/g,'&quot;'); }
+
+  // ---------- Checklist data ----------
+  let CHECKLIST = [
+    {id:'m1', block:'Morning', sub:'6:30 – 9:00 AM', cat:'diet', text:'Lukewarm water + soaked almonds (5), walnuts (2), anjeer (1), dates (2)', note:'Skip dates if your doctor has advised against them. Wait 20–30 minutes after.'},
+    {id:'m3', block:'Morning', cat:'activity', text:'Yoga (7:30–9:00 AM), only if your doctor has cleared it'},
+    {id:'m4', block:'Morning', cat:'diet', text:'Breakfast'},
+    {id:'m5', block:'Morning', cat:'med', text:'Iron supplement', note:'Keep tea/coffee 1–2 hours away; also away from milk'},
+    {id:'m6', block:'Morning', cat:'med', text:'Protein supplement — 1st dose', note:'With milk or water, kept apart from the iron dose'},
+
+    {id:'d0', block:'Midday', sub:'11 AM – 2 PM', cat:'diet', text:'One whole fruit (apple / guava / orange / pear / ripe papaya, in moderation)', note:'Avoid fruit juice'},
+    {id:'d1', block:'Midday', cat:'diet', text:'Lunch (2 rotis + dal + sabzi + salad + 50 g curd)', protein:'~22–24 g', note:'Add 50 g paneer if dal intake is light'},
+    {id:'d2', block:'Midday', cat:'activity', text:'Short walk after lunch, avoid lying down right after eating'},
+    {id:'d3', block:'Midday', cat:'med', text:'Protein biscuit — 1st dose'},
+
+    {id:'e1', block:'Evening', sub:'4 PM onward', cat:'diet', text:'Snack — rotate roasted makhana / roasted chana / peanut chaat (if tolerated) / sprouts chaat', protein:'~8–10 g'},
+    {id:'e2', block:'Evening', cat:'med', text:'Calcium + Vitamin D', note:'Keep at least 2 hours clear of the iron dose'},
+    {id:'e3', block:'Evening', cat:'diet', text:'Keep sipping water — 2.5–3 L total through the day, unless your doctor says otherwise'},
+
+    {id:'n1', block:'Night', sub:'8 PM – bed', cat:'diet', text:'Dinner (1–2 rotis + rice + dal + sabzi + 2 boiled eggs or 100 g paneer)', protein:'~25–30 g'},
+    {id:'n2', block:'Night', cat:'med', text:'Protein biscuit — 2nd dose'},
+    {id:'n3', block:'Night', cat:'med', text:'Protein supplement — 2nd dose', note:'With milk or water, kept apart from the iron dose'},
+    {id:'n4', block:'Night', cat:'med', text:'Folate + B12', note:'After dinner / night'},
+    {id:'n5', block:'Night', cat:'check', text:"Note tonight's fetal movement pattern before sleeping"},
+    {id:'n6', block:'Night', cat:'diet', text:'Milk (300–350 ml)', protein:'~10–12 g'}
+  ];
+  const CAT_LABEL = {diet:'Diet', med:'Medicine', activity:'Activity', check:'Check-in'};
+
+  let checklistState = {};
+  let allChecklist = {};
+  let questions = [];
+  let activeConfigCreatedAt = '';
+  let activePersonalConfig = null;
+  let customDishes = [];
+  let customBreakfastDishes = [];
+  let allKicks = {};
+  let weights = [];
+  let dataUpdatedAt = 0;
+
+  let SEED_QUESTIONS = [
+    {id:'q1', text:'Should the acidity medicine be taken daily, or only when needed?', asked:false},
+    {id:'q2', text:'At what point should something be started for constipation?', asked:false},
+    {id:'q3', text:'Is the scan weight on track for this stage?', asked:false},
+    {id:'q4', text:'What weight gain range is healthy from here to delivery?', asked:false}
+  ];
+
+  let LUNCH_DINNER_DISHES = [
+    'Dal + roti + sabzi','Rajma chawal','Chole + roti','Paneer sabzi + roti','Palak paneer + roti',
+    'Mixed vegetable sabzi + roti','Bhindi / lauki sabzi + roti','Kadhi + rice','Curd rice + veggies',
+    'Khichdi + curd','Soy chunks curry + rice','Sprouts salad + roti','Lobia + rice','Egg curry + roti',
+    'Chicken curry + roti/rice','Mutton curry + roti/rice','Fish curry + rice'
+  ];
+  let BREAKFAST_DISHES = [
+    '2 moong chillas + 1 boiled egg','1 bowl kala chana + 1 egg','Vegetable oats with milk + 2 eggs',
+    'Lobia + 1 egg','Besan chilla + 50g paneer','Dalia with milk + 2 eggs','Poha + 2 eggs','Moong chilla',
+    'Kala chana','Lobia','Besan chilla + paneer','Oats with milk','Dalia with milk','Vegetable oats',
+    'Sprouts','Plain poha','Plain upma'
+  ];
+  const BREAKFAST_PROTEIN = {
+    '2 moong chillas + 1 boiled egg':'~20 g','1 bowl kala chana + 1 egg':'~21 g','Vegetable oats with milk + 2 eggs':'~22 g',
+    'Lobia + 1 egg':'~20 g','Besan chilla + 50g paneer':'~22 g','Dalia with milk + 2 eggs':'~21 g','Poha + 2 eggs':'~18–20 g',
+    'Moong chilla':'~10–15 g','Kala chana':'~10–15 g','Lobia':'~10–15 g','Besan chilla + paneer':'~10–15 g',
+    'Oats with milk':'~10–15 g','Dalia with milk':'~8–12 g','Vegetable oats':'~8–12 g','Sprouts':'~8–12 g',
+    'Plain poha':'boost with egg/curd/paneer/chana','Plain upma':'boost with egg/curd/paneer/chana'
+  };
+  let DEFAULT_BREAKFAST_MENU = {
+    Mon:'2 moong chillas + 1 boiled egg', Tue:'1 bowl kala chana + 1 egg', Wed:'Vegetable oats with milk + 2 eggs',
+    Thu:'Lobia + 1 egg', Fri:'Besan chilla + 50g paneer', Sat:'Dalia with milk + 2 eggs', Sun:'Poha + 2 eggs'
+  };
+  const WEEK_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  let weeklyMenu = { breakfast: Object.assign({}, DEFAULT_BREAKFAST_MENU), lunch:{}, dinner:{} };
+
+  function dishOptions(){ const m=LUNCH_DINNER_DISHES.slice(); customDishes.forEach(d=>{ if(!m.includes(d)) m.push(d); }); return m; }
+  function breakfastDishOptions(){ const m=BREAKFAST_DISHES.slice(); customBreakfastDishes.forEach(d=>{ if(!m.includes(d)) m.push(d); }); return m; }
+
+  // ---------- Checklist ----------
+  function renderChecklist(){
+    const host = document.getElementById('checklistHost');
+    host.innerHTML = '';
+    let blockSeen = {};
+    CHECKLIST.forEach(item=>{
+      if(!blockSeen[item.block]){
+        blockSeen[item.block] = true;
+        const h = document.createElement('div');
+        h.className = 'block-title';
+        h.textContent = item.block;
+        if(item.sub){ const sp=document.createElement('span'); sp.className='block-sub'; sp.textContent='('+item.sub+')'; h.appendChild(sp); }
+        host.appendChild(h);
+      }
+      const checked = !!checklistState[item.id];
+      let displayText = escapeHtml(item.text);
+      let proteinLabel = item.protein || null;
+
+      if(item.id === 'm4'){
+        const dish = weeklyMenu.breakfast && weeklyMenu.breakfast[todayAbbr()];
+        if(dish){ displayText = 'Breakfast — ' + escapeHtml(dish); proteinLabel = BREAKFAST_PROTEIN[dish] || null; }
+      }
+      if(item.id === 'd1'){
+        const dish = weeklyMenu.lunch && weeklyMenu.lunch[todayAbbr()];
+        if(dish) displayText = escapeHtml(item.text) + ' — main: ' + escapeHtml(dish);
+      }
+      if(item.id === 'n1'){
+        const dish = weeklyMenu.dinner && weeklyMenu.dinner[todayAbbr()];
+        if(dish) displayText = escapeHtml(item.text) + ' — main: ' + escapeHtml(dish);
+      }
+
+      const row = document.createElement('div');
+      row.className = 'item' + (checked ? ' checked' : '');
+      row.innerHTML =
+        '<input type="checkbox" id="chk_'+item.id+'" '+(checked?'checked':'')+'>'+
+        '<label for="chk_'+item.id+'">'+
+          '<span class="txt">'+displayText+
+            '<span class="tag '+item.cat+'">'+CAT_LABEL[item.cat]+'</span>'+
+            (proteinLabel ? '<span class="protein-badge">Protein '+escapeHtml(proteinLabel)+'</span>' : '')+
+          '</span>'+
+          (item.note ? '<div class="note">'+escapeHtml(item.note)+'</div>' : '')+
+        '</label>';
+      row.querySelector('input').addEventListener('change', (e)=>{
+        checklistState[item.id] = e.target.checked;
+        row.classList.toggle('checked', e.target.checked);
+        updateProgress(); saveData(); renderHistory();
+      });
+      host.appendChild(row);
+    });
+    updateProgress();
+  }
+  function updateProgress(){
+    const total = CHECKLIST.length;
+    const done = CHECKLIST.filter(i=>checklistState[i.id]).length;
+    document.getElementById('progFill').style.width = (total? (done/total*100):0) + '%';
+    document.getElementById('progCount').textContent = done + ' / ' + total + ' done';
+  }
+
+  // ---------- History ----------
+  function renderHistory(){
+    const host = document.getElementById('historyList');
+    const keys = Object.keys(allChecklist).sort().reverse();
+    if(keys.length === 0){ host.innerHTML = '<div class="history-empty">No days recorded yet — today will appear here once you check something off.</div>'; return; }
+    host.innerHTML = '';
+    const total = CHECKLIST.length;
+    keys.forEach(dateKey=>{
+      const dayState = allChecklist[dateKey] || {};
+      const done = CHECKLIST.filter(i=>dayState[i.id]).length;
+      const pct = total ? done/total : 0;
+      const fillClass = pct >= 0.8 ? 'good' : (pct >= 0.5 ? 'mid' : 'low');
+      const det = document.createElement('details');
+      det.className = 'history-day';
+      det.innerHTML =
+        '<summary>'+
+          '<span class="hd-date">'+formatDateLabel(dateKey)+'</span>'+
+          '<span class="hd-track"><span class="hd-fill '+fillClass+'" style="width:'+(pct*100)+'%"></span></span>'+
+          '<span class="hd-count">'+done+'/'+total+'</span>'+
+        '</summary><div class="history-items"></div>';
+      const itemsHost = det.querySelector('.history-items');
+      CHECKLIST.forEach(item=>{
+        const wasDone = !!dayState[item.id];
+        const row = document.createElement('div');
+        row.className = 'hi-row ' + (wasDone ? 'done' : 'missed');
+        row.innerHTML = '<span class="hi-mark">'+(wasDone?'✓':'✕')+'</span><span class="hi-txt">'+escapeHtml(item.text)+'</span>';
+        itemsHost.appendChild(row);
+      });
+      host.appendChild(det);
+    });
+  }
+
+  // ---------- Menu editor ----------
+  function buildSelect(mealType, day, opts){
+    const current = (weeklyMenu[mealType] && weeklyMenu[mealType][day]) || '';
+    let html = '<select data-meal="'+mealType+'" data-day="'+day+'"><option value="">— not set —</option>';
+    opts.forEach(o=>{ html += '<option value="'+escapeAttr(o)+'"'+(o===current?' selected':'')+'>'+escapeHtml(o)+'</option>'; });
+    html += '<option value="__custom__">+ Add custom dish…</option></select>';
+    return html;
+  }
+  function renderMenuSection(mealType, hostId, opts){
+    const host = document.getElementById(hostId);
+    host.innerHTML = '';
+    WEEK_DAYS.forEach(day=>{
+      const row = document.createElement('div');
+      row.className = 'menu-row';
+      row.innerHTML = '<span class="menu-day">'+day+'</span>' + buildSelect(mealType, day, opts);
+      host.appendChild(row);
+    });
+    host.querySelectorAll('select').forEach(sel=>{ sel.addEventListener('change', onMenuSelectChange); });
+  }
+  function renderMenuEditor(){
+    renderMenuSection('breakfast', 'menuRowsBreakfast', breakfastDishOptions());
+    renderMenuSection('lunch', 'menuRowsLunch', dishOptions());
+    renderMenuSection('dinner', 'menuRowsDinner', dishOptions());
+  }
+  function onMenuSelectChange(e){
+    const mealType = e.target.getAttribute('data-meal');
+    const day = e.target.getAttribute('data-day');
+    let val = e.target.value;
+    if(val === '__custom__'){
+      const entered = prompt('Enter a dish name for ' + day + ' ' + mealType + ':');
+      if(entered && entered.trim()){
+        val = entered.trim();
+        if(mealType === 'breakfast'){ if(!breakfastDishOptions().includes(val)) customBreakfastDishes.push(val); }
+        else { if(!dishOptions().includes(val)) customDishes.push(val); }
+      } else { renderMenuEditor(); return; }
+    }
+    if(!weeklyMenu[mealType]) weeklyMenu[mealType] = {};
+    weeklyMenu[mealType][day] = val;
+    renderMenuEditor(); renderChecklist(); saveData();
+  }
+
+  // ---------- Kick counter ----------
+  function todayKicks(){ return allKicks[localDateKey()] || 0; }
+  function renderKick(){
+    document.getElementById('kickCount').textContent = todayKicks();
+    const mini = document.getElementById('kickMini');
+    const keys = Object.keys(allKicks).filter(k=>k!==localDateKey()).sort().reverse().slice(0,3);
+    if(keys.length === 0){ mini.innerHTML = '<span>Previous days will show here.</span>'; return; }
+    mini.innerHTML = keys.map(k=>'<span>'+formatDateLabel(k)+': <b>'+allKicks[k]+'</b></span>').join('');
+  }
+  document.getElementById('kickAdd').addEventListener('click', ()=>{ const k=localDateKey(); allKicks[k]=(allKicks[k]||0)+1; renderKick(); saveData(); });
+  document.getElementById('kickUndo').addEventListener('click', ()=>{ const k=localDateKey(); allKicks[k]=Math.max(0,(allKicks[k]||0)-1); renderKick(); saveData(); });
+  document.getElementById('kickReset').addEventListener('click', ()=>{ const k=localDateKey(); allKicks[k]=0; renderKick(); saveData(); });
+
+  // ---------- Weight log ----------
+  function sortedWeights(){ return weights.slice().sort((a,b)=> a.date < b.date ? -1 : (a.date > b.date ? 1 : 0)); }
+  function sparkline(points){
+    if(points.length < 2) return '';
+    const w=100, h=36, pad=3;
+    const ks = points.map(p=>p.kg);
+    const min = Math.min.apply(null, ks), max = Math.max.apply(null, ks);
+    const span = (max-min) || 1;
+    const step = (w - pad*2) / (points.length - 1);
+    const coords = points.map((p,i)=>{
+      const x = pad + i*step;
+      const y = pad + (h - pad*2) * (1 - (p.kg - min)/span);
+      return [x,y];
+    });
+    const line = coords.map((c,i)=>(i?'L':'M')+c[0].toFixed(1)+' '+c[1].toFixed(1)).join(' ');
+    const dots = coords.map(c=>'<circle cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="1.6" fill="#2F7D6E"/>').join('');
+    return '<svg class="weight-spark" viewBox="0 0 '+w+' '+h+'" width="100%" height="'+h+'" preserveAspectRatio="none" aria-hidden="true">'+
+           '<path d="'+line+'" fill="none" stroke="#2F7D6E" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>'+dots+'</svg>';
+  }
+  function renderWeight(){
+    const body = document.getElementById('weightBody');
+    const sorted = sortedWeights();
+    if(sorted.length === 0){ body.innerHTML = '<div class="weight-empty">No entries yet — save your current weight to start tracking.</div>'; return; }
+    const latest = sorted[sorted.length-1];
+    let deltaHtml = '';
+    if(sorted.length >= 2){
+      const prev = sorted[sorted.length-2];
+      const diff = +(latest.kg - prev.kg).toFixed(1);
+      const cls = diff > 0 ? 'up' : (diff < 0 ? 'down' : 'flat');
+      const sign = diff > 0 ? '+' : '';
+      deltaHtml = '<span class="weight-delta '+cls+'">'+sign+diff+' kg since last</span>';
+    }
+    let html = '<div class="weight-summary"><span class="weight-latest">'+latest.kg+' <small>kg</small></span>'+deltaHtml+'</div>';
+    html += sparkline(sorted);
+    html += '<div class="weight-list">';
+    sorted.slice().reverse().forEach(entry=>{
+      html += '<div class="weight-row" data-date="'+entry.date+'">'+
+                '<span class="wr-date">'+formatDateLabel(entry.date)+'</span>'+
+                '<span class="wr-kg">'+entry.kg+' kg</span>'+
+                '<button class="wr-del" title="Remove" data-del="'+entry.date+'">×</button>'+
+              '</div>';
+    });
+    html += '</div>';
+    body.innerHTML = html;
+    body.querySelectorAll('.wr-del').forEach(b=>{
+      b.addEventListener('click', ()=>{ const d=b.getAttribute('data-del'); weights = weights.filter(w=>w.date!==d); renderWeight(); saveData(); });
+    });
+  }
+  function saveWeight(){
+    const inp = document.getElementById('weightInput');
+    const val = parseFloat(inp.value);
+    if(isNaN(val) || val <= 0 || val > 300){ inp.focus(); return; }
+    const kg = +val.toFixed(1);
+    const key = localDateKey();
+    const existing = weights.find(w=>w.date===key);
+    if(existing) existing.kg = kg; else weights.push({date:key, kg:kg});
+    inp.value = '';
+    renderWeight(); saveData();
+  }
+  document.getElementById('weightSave').addEventListener('click', saveWeight);
+  document.getElementById('weightInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') saveWeight(); });
+
+  // ---------- Do / Don't ----------
+  let DOS = [
+    'Take every medicine at its usual time','Keep iron and calcium about 2 hours apart','Include a protein source in every meal',
+    'Sip water steadily through the day','Walk a little after meals','Eat fruit and vegetables daily',
+    'Continue yoga only if your doctor has cleared it','Track fetal movement daily','Keep every ANC visit',
+    "Follow your doctor's prescription over any general guidance"
+  ];
+  let DONTS = [
+    'Skip a medicine dose','Take calcium and iron together','Have tea, coffee or milk right around the iron dose',
+    'Ignore reduced fetal movement','Ignore fluid leakage','Ignore vaginal bleeding',
+    'Ignore a severe headache or blurred vision','Self-medicate, even for bloating or constipation','Overdo fried food when bloating flares up'
+  ];
+  function fillList(id, arr){ document.getElementById(id).innerHTML = arr.map(t=>'<li>'+escapeHtml(t)+'</li>').join(''); }
+  fillList('doList', DOS); fillList('dontList', DONTS);
+
+  // ---------- Questions ----------
+  function renderQuestions(){
+    const ul = document.getElementById('qList');
+    if(questions.length === 0){ ul.innerHTML = '<li class="q-empty">No questions saved yet — add one above.</li>'; return; }
+    ul.innerHTML = '';
+    questions.forEach(q=>{
+      const li = document.createElement('li');
+      li.className = 'q-item' + (q.asked ? ' asked' : '');
+      li.innerHTML = '<input type="checkbox" '+(q.asked?'checked':'')+'>'+
+                     '<span class="qtxt">'+escapeHtml(q.text)+'</span>'+
+                     '<button class="del" title="Remove">×</button>';
+      li.querySelector('input').addEventListener('change', (e)=>{ q.asked = e.target.checked; li.classList.toggle('asked', q.asked); saveData(); });
+      li.querySelector('.del').addEventListener('click', ()=>{ questions = questions.filter(x=>x.id!==q.id); renderQuestions(); saveData(); });
+      ul.appendChild(li);
+    });
+  }
+  document.getElementById('qAddBtn').addEventListener('click', ()=>{ const inp=document.getElementById('qInput'); addQuestion(inp.value); inp.value=''; inp.focus(); });
+  document.getElementById('qInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ addQuestion(e.target.value); e.target.value=''; } });
+  function addQuestion(text){ text=(text||'').trim(); if(!text) return; questions.push({id:'q_'+Date.now(), text, asked:false}); renderQuestions(); saveData(); }
+
+  // ---------- Personalised setup imported from the intake questionnaire ----------
+  function validatePersonalConfig(cfg){
+    if(!cfg || cfg.version!==1 || !cfg.profile || typeof cfg.profile!=='object') throw new Error('Unsupported setup file');
+    if(!cfg.profile.expectedDate || isNaN(new Date(cfg.profile.expectedDate+'T00:00:00').getTime())) throw new Error('Expected delivery date is missing or invalid');
+    if(!Array.isArray(cfg.dailyPlan) || cfg.dailyPlan.some(x=>!x || !x.id || !x.text)) throw new Error('Daily plan is invalid');
+    return cfg;
+  }
+  function applyPersonalConfig(raw){
+    if(!raw){
+      CHECKLIST=[]; DOS=[]; DONTS=[]; SEED_QUESTIONS=[];
+      LUNCH_DINNER_DISHES=[]; BREAKFAST_DISHES=[]; DEFAULT_BREAKFAST_MENU={};
+      fillList('doList',DOS); fillList('dontList',DONTS); renderHero(); return;
+    }
+    const cfg=validatePersonalConfig(raw);
+    EDD=new Date(cfg.profile.expectedDate+'T00:00:00');
+    document.getElementById('dashboardTitle').textContent=cfg.profile.displayName || 'Pregnancy Dashboard';
+    document.getElementById('eddDisplay').textContent=EDD.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    document.getElementById('medicalDisclaimer').textContent=cfg.profile.medicalDisclaimer || document.getElementById('medicalDisclaimer').textContent;
+    const protein=document.getElementById('proteinGoal');
+    if(cfg.profile.proteinTarget){ protein.hidden=false; protein.innerHTML='Daily protein target supplied in the plan: <strong>'+escapeHtml(cfg.profile.proteinTarget)+'</strong>.'; }
+    else protein.hidden=true;
+    CHECKLIST=cfg.dailyPlan.slice();
+    DOS=Array.isArray(cfg.dos)?cfg.dos.slice():[];
+    DONTS=Array.isArray(cfg.donts)?cfg.donts.slice():[];
+    SEED_QUESTIONS=(Array.isArray(cfg.questions)?cfg.questions:[]).map((text,i)=>({id:'seed-'+i,text,asked:false}));
+    BREAKFAST_DISHES=(cfg.mealOptions&&Array.isArray(cfg.mealOptions.breakfast))?cfg.mealOptions.breakfast.slice():[];
+    LUNCH_DINNER_DISHES=(cfg.mealOptions&&Array.isArray(cfg.mealOptions.lunchDinner))?cfg.mealOptions.lunchDinner.slice():[];
+    DEFAULT_BREAKFAST_MENU={};
+    fillList('doList',DOS); fillList('dontList',DONTS); renderHero();
+  }
+
+  // ---------- Persistence ----------
+  async function loadData(){
+    try{
+      const migrated = await PregnancyAppCore.migrateLegacy();
+      return migrated || await PregnancyAppCore.get(PregnancyAppCore.keys.DATA_KEY);
+    }catch(e){ console.error('load failed', e); return null; }
+  }
+  function currentPayload(){
+    return { checklist:allChecklist, questions:questions, menu:weeklyMenu, customDishes:customDishes, customBreakfastDishes:customBreakfastDishes, kicks:allKicks, weights:weights, updatedAt: dataUpdatedAt, configCreatedAt:activeConfigCreatedAt, personalConfig:activePersonalConfig };
+  }
+  async function saveData(skipSync){
+    if(!skipSync) dataUpdatedAt = Date.now();
+    const data = currentPayload();
+    try{ await PregnancyAppCore.set(PregnancyAppCore.keys.DATA_KEY, data); }
+    catch(e){ console.error('save failed', e); }
+    if(!skipSync) scheduleSyncPush();
+  }
+
+  // ---------- Sync (encrypted, cross-device — her phone, a partner's phone, a Mac) ----------
+  // The backend stores only opaque encrypted envelopes. A separate random capability token
+  // authorizes reads/writes/deletes without accounts and is never used as the encryption key.
+  const SYNC_SERVICE_URL = (window.PREG_SYNC_ENDPOINT || 'https://preg-sync.example.invalid').replace(/\/+$/,'');
+  function syncEndpoint(cfg){ return cfg.url.replace(/\/+$/,'') + '/v1/records/' + encodeURIComponent(cfg.pathid); }
+  function looksLikeSyncUrl(u){
+    try{ const x=new URL(u); return x.protocol==='https:'; }
+    catch(e){ return false; }
+  }
+  function syncHeaders(cfg){ return {'Content-Type':'application/json','Authorization':'Bearer '+cfg.authToken}; }
+  const SYNC_PUSH_DEBOUNCE_MS = 8000;   // wait for a quiet moment after edits before pushing
+  const SYNC_MIN_PUSH_GAP_MS = 20000;   // never auto-push more often than this
+  const SYNC_MIN_REFOCUS_GAP_MS = 60000; // don't re-pull just from switching tabs/apps briefly
+
+  let syncConfig = null;
+  let syncPushTimer = null;
+  let lastAutoPushAt = 0;
+  let syncBusy = false;
+
+  async function loadSyncConfig(){
+    try{
+      const cfg=await PregnancyAppCore.get(PregnancyAppCore.keys.SYNC_KEY);
+      if(!cfg) return null;
+      if(!cfg.authToken || !looksLikeSyncUrl(cfg.url)){ await clearSyncConfig(); return null; }
+      return cfg;
+    }
+    catch(e){ return null; }
+  }
+  async function saveSyncConfig(cfg){ await PregnancyAppCore.set(PregnancyAppCore.keys.SYNC_KEY, cfg); }
+  async function clearSyncConfig(){ await PregnancyAppCore.remove(PregnancyAppCore.keys.SYNC_KEY); }
+
+  function bufToB64(buf){
+    let bin=''; const bytes = new Uint8Array(buf);
+    for(let i=0;i<bytes.length;i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin);
+  }
+  function b64ToBuf(b64){
+    const bin = atob(b64); const bytes = new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+    return bytes.buffer;
+  }
+  function getSyncKey(passphrase){
+    const enc = new TextEncoder();
+    return crypto.subtle.importKey('raw', enc.encode(passphrase), {name:'PBKDF2'}, false, ['deriveKey'])
+      .then(baseKey => crypto.subtle.deriveKey(
+        {name:'PBKDF2', salt: enc.encode('pregnancy-dashboard-sync-v1'), iterations: 120000, hash:'SHA-256'},
+        baseKey, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']
+      ));
+  }
+  async function encryptForSync(obj, passphrase){
+    return PregnancyAppCore.encryptJson(obj, passphrase);
+  }
+  async function decryptFromSync(envelope, passphrase){
+    return PregnancyAppCore.decryptJson(envelope, passphrase);
+  }
+  function genPassphrase(){
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+    const bytes = crypto.getRandomValues(new Uint8Array(16));
+    let out = '';
+    for(let i=0;i<bytes.length;i++) out += chars[bytes[i] % chars.length];
+    return out;
+  }
+
+  async function applyRemotePayload(remote){
+    if(remote.personalConfig){
+      const remoteConfig=validatePersonalConfig(remote.personalConfig);
+      activePersonalConfig=remoteConfig;
+      activeConfigCreatedAt=remoteConfig.createdAt || '';
+      await PregnancyAppCore.set(PregnancyAppCore.keys.CONFIG_KEY,remoteConfig);
+      applyPersonalConfig(remoteConfig);
+    }
+    allChecklist = remote.checklist || {};
+    questions = Array.isArray(remote.questions) ? remote.questions : [];
+    const menuData = remote.menu || {};
+    const hasBreakfast = menuData.breakfast && Object.keys(menuData.breakfast).length > 0;
+    weeklyMenu = {
+      breakfast: hasBreakfast ? menuData.breakfast : Object.assign({}, DEFAULT_BREAKFAST_MENU),
+      lunch: menuData.lunch || {}, dinner: menuData.dinner || {}
+    };
+    customDishes = Array.isArray(remote.customDishes) ? remote.customDishes : [];
+    customBreakfastDishes = Array.isArray(remote.customBreakfastDishes) ? remote.customBreakfastDishes : [];
+    allKicks = remote.kicks && typeof remote.kicks === 'object' ? remote.kicks : {};
+    weights = Array.isArray(remote.weights) ? remote.weights : [];
+    dataUpdatedAt = remote.updatedAt || Date.now();
+    const todayKey = localDateKey();
+    if(!allChecklist[todayKey]) allChecklist[todayKey] = {};
+    checklistState = allChecklist[todayKey];
+    renderMenuEditor(); renderChecklist(); renderQuestions(); renderHistory(); renderKick(); renderWeight();
+    try{ await PregnancyAppCore.set(PregnancyAppCore.keys.DATA_KEY, currentPayload()); }catch(e){}
+  }
+
+  function setSyncStatus(kind, text){
+    const dot = document.getElementById('syncDot');
+    const txt = document.getElementById('syncStatusText');
+    if(!dot || !txt) return;
+    dot.className = 'sync-dot' + (kind ? ' ' + kind : '');
+    txt.textContent = text;
+  }
+  function showSyncMsg(text, kind){
+    const el = document.getElementById('syncMsg');
+    if(!el) return;
+    el.textContent = text;
+    el.className = 'sync-msg show' + (kind ? ' ' + kind : '');
+    clearTimeout(showSyncMsg._t);
+    showSyncMsg._t = setTimeout(()=>{ el.classList.remove('show'); }, 6000);
+  }
+  function refreshSyncPanels(){
+    const configured = !!syncConfig;
+    document.getElementById('syncSetupPanel').style.display = configured ? 'none' : '';
+    document.getElementById('syncConnectedPanel').classList.toggle('show', configured);
+    if(configured){
+      const code=syncCodeString(syncConfig);
+      document.getElementById('syncCodeDisplay').textContent=code;
+      const qr=qrcode(0,'M'); qr.addData(syncQrLink(syncConfig)); qr.make();
+      document.getElementById('syncQr').innerHTML=qr.createSvgTag(4,4,'Recovery QR code','Pregnancy Dashboard recovery QR code');
+    }
+  }
+  function syncCodeString(cfg){ return PregnancyAppCore.encodeRecovery({secret:cfg.passphrase,recordId:cfg.pathid,endpoint:cfg.url,capability:cfg.authToken}); }
+  function syncQrLink(cfg){ return location.origin+location.pathname+'#recover='+encodeURIComponent(syncCodeString(cfg)); }
+
+  async function syncPush(isManual){
+    if(!syncConfig || syncBusy) return;
+    syncBusy = true;
+    setSyncStatus('busy', 'Syncing…');
+    try{
+      const envelope = await encryptForSync(currentPayload(), syncConfig.passphrase);
+      const resp = await fetch(syncEndpoint(syncConfig), { method:'PUT', headers:syncHeaders(syncConfig), body: JSON.stringify(envelope) });
+      if(!resp.ok) throw new Error('push failed: ' + resp.status);
+      lastAutoPushAt = Date.now();
+      setSyncStatus('ok', 'Synced just now');
+      if(isManual) showSyncMsg('Synced successfully.', 'ok');
+    }catch(e){
+      console.error('sync push failed', e);
+      setSyncStatus('err', 'Sync unavailable — saved on this device');
+      if(isManual) showSyncMsg("Couldn't reach sync right now. Your data is safe on this device — it'll retry automatically.", 'err');
+    }finally{
+      syncBusy = false;
+    }
+  }
+  function scheduleSyncPush(){
+    if(!syncConfig) return;
+    if(syncPushTimer) clearTimeout(syncPushTimer);
+    syncPushTimer = setTimeout(()=>{
+      syncPushTimer = null;
+      const wait = SYNC_MIN_PUSH_GAP_MS - (Date.now() - lastAutoPushAt);
+      if(wait > 0){ syncPushTimer = setTimeout(()=>{ syncPushTimer = null; syncPush(false); }, wait); return; }
+      syncPush(false);
+    }, SYNC_PUSH_DEBOUNCE_MS);
+  }
+  async function syncPull(isManual){
+    if(!syncConfig || syncBusy) return;
+    syncBusy = true;
+    setSyncStatus('busy', 'Checking for updates…');
+    try{
+      const resp = await fetch(syncEndpoint(syncConfig), {method:'GET',headers:syncHeaders(syncConfig)});
+      if(!resp.ok) throw new Error('pull failed: ' + resp.status);
+      const envelope = await resp.json();
+      if(!envelope || !envelope.ciphertext){ setSyncStatus('ok', 'Synced — up to date'); return; }
+      const remote = await decryptFromSync(envelope, syncConfig.passphrase);
+      if((remote.updatedAt||0) > dataUpdatedAt){
+        await applyRemotePayload(remote);
+        setSyncStatus('ok', 'Updated from another device just now');
+        if(isManual) showSyncMsg('Pulled the latest updates.', 'ok');
+      } else {
+        setSyncStatus('ok', 'Synced — up to date');
+        if(isManual) showSyncMsg("You're already up to date.", 'ok');
+        if((remote.updatedAt||0) < dataUpdatedAt) scheduleSyncPush();
+      }
+    }catch(e){
+      console.error('sync pull failed', e);
+      setSyncStatus('err', "Sync unavailable — showing this device's saved data");
+      if(isManual) showSyncMsg("Couldn't reach sync right now. Showing what's saved on this device.", 'err');
+    }finally{
+      syncBusy = false;
+    }
+  }
+  function genSyncId(len){
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    const bytes = crypto.getRandomValues(new Uint8Array(len || 24));
+    let out = '';
+    for(let i=0;i<bytes.length;i++) out += chars[bytes[i] % chars.length];
+    return out;
+  }
+  async function startSyncOnThisDevice(){
+    const url = SYNC_SERVICE_URL;
+    if(!looksLikeSyncUrl(url) || url.includes('.example.invalid')){ showSyncMsg('Private sync is not deployed yet. Local data and encrypted backups still work.', 'err'); return; }
+    const btn = document.getElementById('syncStartBtn');
+    btn.disabled = true; btn.textContent = 'Setting up…';
+    try{
+      const passphrase = genPassphrase();
+      const createResp = await fetch(url+'/v1/records',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      if(!createResp.ok) throw new Error('record setup failed: '+createResp.status);
+      const created = await createResp.json();
+      if(!created.recordId || !created.capability) throw new Error('invalid setup response');
+      const cfg = { url, pathid:created.recordId, passphrase, authToken:created.capability };
+      const envelope = await encryptForSync(currentPayload(), passphrase);
+      const resp = await fetch(syncEndpoint(cfg), { method:'PUT', headers:syncHeaders(cfg), body: JSON.stringify(envelope) });
+      if(!resp.ok) throw new Error('setup failed: ' + resp.status);
+      syncConfig = cfg;
+      await saveSyncConfig(syncConfig);
+      lastAutoPushAt = Date.now();
+      refreshSyncPanels();
+      setSyncStatus('ok', 'Synced just now');
+      showSyncMsg("Sync is on. Copy the code below and enter it on her other device or a partner's phone.", 'ok');
+    }catch(e){
+      console.error('sync setup failed', e);
+      showSyncMsg("Couldn't create private sync. Your data remains saved on this device.", 'err');
+    }finally{
+      btn.disabled = false; btn.textContent = 'Start syncing this device';
+    }
+  }
+  function parseSyncCode(raw){
+    try{
+      const parsed=PregnancyAppCore.decodeRecovery(raw);
+      if(!looksLikeSyncUrl(parsed.endpoint) || !parsed.capability) return null;
+      return {passphrase:parsed.secret,pathid:parsed.recordId,url:parsed.endpoint,authToken:parsed.capability};
+    }catch(e){ return null; }
+  }
+  async function connectWithCode(){
+    const input = document.getElementById('syncCodeInput');
+    const cfg = parseSyncCode(input.value);
+    if(!cfg){ showSyncMsg("That doesn't look like a full sync code — paste the whole thing, exactly as it was shared.", 'err'); return; }
+    const btn = document.getElementById('syncConnectBtn');
+    btn.disabled = true; btn.textContent = 'Connecting…';
+    try{
+      const resp = await fetch(syncEndpoint(cfg), {method:'GET',headers:syncHeaders(cfg)});
+      if(!resp.ok) throw new Error('fetch failed: ' + resp.status);
+      const envelope = await resp.json();
+      if(!envelope || !envelope.ciphertext) throw new Error('empty');
+      const remote = await decryptFromSync(envelope, cfg.passphrase);
+      syncConfig = cfg;
+      await saveSyncConfig(syncConfig);
+      await applyRemotePayload(remote);
+      refreshSyncPanels();
+      setSyncStatus('ok', 'Connected and synced');
+      showSyncMsg('Connected — this device is now linked.', 'ok');
+      input.value = '';
+    }catch(e){
+      console.error('connect failed', e);
+      showSyncMsg("Couldn't connect with that code — double-check it was copied in full, and that the other device finished setting up sync.", 'err');
+    }finally{
+      btn.disabled = false; btn.textContent = 'Connect';
+    }
+  }
+  function syncAvailable(){
+    return !!(window.isSecureContext && window.crypto && window.crypto.subtle);
+  }
+  async function initSync(){
+    // Sync needs a secure context (https) + Web Crypto. On a local file, especially on
+    // iPhone/iPad, the browser disables these — so show a clear notice instead of failing silently.
+    if(!syncAvailable()){
+      document.getElementById('syncSetupPanel').style.display = 'none';
+      document.getElementById('syncConnectedPanel').classList.remove('show');
+      document.getElementById('syncInsecurePanel').classList.add('show');
+      setSyncStatus('err', 'Sync off — open the web link to turn it on');
+      return;
+    }
+    document.getElementById('syncInsecurePanel').classList.remove('show');
+
+    syncConfig = await loadSyncConfig();
+    refreshSyncPanels();
+    if(syncConfig){ setSyncStatus(null, 'Checking sync…'); syncPull(false); }
+    else{ setSyncStatus(null, 'Not connected yet'); }
+
+    document.getElementById('syncStartBtn').addEventListener('click', startSyncOnThisDevice);
+    document.getElementById('syncHaveCodeToggle').addEventListener('click', ()=>{
+      document.getElementById('syncEnterPanel').classList.toggle('show');
+    });
+    document.getElementById('syncConnectBtn').addEventListener('click', connectWithCode);
+    document.getElementById('syncCodeInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') connectWithCode(); });
+    document.getElementById('syncCopyBtn').addEventListener('click', async ()=>{
+      try{ await navigator.clipboard.writeText(syncCodeString(syncConfig)); showSyncMsg('Code copied.', 'ok'); }
+      catch(e){ showSyncMsg('Could not copy automatically — select the code above and copy it manually.', 'err'); }
+    });
+    document.getElementById('syncNowBtn').addEventListener('click', ()=>{ syncPull(true); });
+    document.getElementById('syncUnlinkBtn').addEventListener('click', async ()=>{
+      if(!confirm('Unlink this device from sync? Your data stays on this device, but it will stop sharing updates with the others until you enter a code again.')) return;
+      syncConfig = null; await clearSyncConfig(); refreshSyncPanels(); setSyncStatus(null, 'Not connected yet');
+    });
+
+    if(!syncConfig && location.hash.startsWith('#recover=')){
+      try{
+        document.getElementById('syncCodeInput').value=decodeURIComponent(location.hash.slice(9));
+        history.replaceState(null,'',location.pathname+location.search);
+        await connectWithCode();
+      }catch(e){ showSyncMsg('The scanned recovery QR code is invalid.', 'err'); }
+    }
+
+    let lastForegroundCheck = Date.now();
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.visibilityState === 'visible' && syncConfig){
+        const now = Date.now();
+        if(now - lastForegroundCheck > SYNC_MIN_REFOCUS_GAP_MS){ lastForegroundCheck = now; syncPull(false); }
+      }
+    });
+  }
+
+  // ---------- Encrypted backup, restore and deletion ----------
+  function downloadJson(filename, value){
+    const blob=new Blob([JSON.stringify(value,null,2)],{type:'application/json'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  async function refreshBackupState(){
+    const meta=await PregnancyAppCore.get(PregnancyAppCore.keys.META_KEY) || {};
+    const el=document.getElementById('backupState');
+    el.textContent=meta.lastBackupAt ? 'Last backup: '+new Date(meta.lastBackupAt).toLocaleString('en-IN') : 'No backup created on this device yet.';
+  }
+  async function makeBackup(){
+    const backupPassphrase=prompt('Create a backup password of at least 12 characters. You will need it to restore this file.');
+    if(backupPassphrase===null) return;
+    if(backupPassphrase.length<12){ alert('Use at least 12 characters. The backup was not created.'); return; }
+    const payload={format:'pregnancy-dashboard-backup',version:1,createdAt:new Date().toISOString(),data:currentPayload(),config:await PregnancyAppCore.get(PregnancyAppCore.keys.CONFIG_KEY)};
+    const encrypted=await PregnancyAppCore.encryptJson(payload,backupPassphrase);
+    downloadJson('pregnancy-dashboard-backup-'+localDateKey()+'.json',{format:'pregnancy-dashboard-encrypted-backup',version:1,envelope:encrypted});
+    await PregnancyAppCore.set(PregnancyAppCore.keys.META_KEY,{lastBackupAt:Date.now()});
+    await refreshBackupState();
+  }
+  async function restoreBackupFile(file){
+    const backupPassphrase=prompt('Enter the backup password.');
+    if(backupPassphrase===null) return;
+    const wrapper=JSON.parse(await file.text());
+    if(!wrapper || wrapper.format!=='pregnancy-dashboard-encrypted-backup' || !wrapper.envelope) throw new Error('Unsupported backup file');
+    const restored=PregnancyAppCore.validateBackup(await PregnancyAppCore.decryptJson(wrapper.envelope,backupPassphrase));
+    await PregnancyAppCore.set(PregnancyAppCore.keys.DATA_KEY,restored.data);
+    if(restored.config) await PregnancyAppCore.set(PregnancyAppCore.keys.CONFIG_KEY,restored.config);
+    location.reload();
+  }
+  async function clearLocalOnly(){
+    await PregnancyAppCore.clearAll();
+    localStorage.removeItem('pd_data'); localStorage.removeItem('pd_sync_config');
+    location.reload();
+  }
+  async function deleteLocalData(){
+    if(!confirm("Delete all dashboard entries and settings from this device? This cannot be undone without a backup.")) return;
+    await clearLocalOnly();
+  }
+  async function deleteEverywhere(){
+    if(!syncConfig){ alert('This device is not connected to sync. Use the local delete button instead.'); return; }
+    if(!confirm('Delete the encrypted cloud copy and all data on this device? Other linked devices must also delete their local copies.')) return;
+    const resp=await fetch(syncEndpoint(syncConfig),{method:'DELETE',headers:syncHeaders(syncConfig)});
+    if(!resp.ok) throw new Error('Remote deletion failed');
+    await clearLocalOnly();
+  }
+  document.getElementById('backupBtn').addEventListener('click',()=>makeBackup().catch(e=>alert('Backup failed: '+e.message)));
+  document.getElementById('configImportBtn').addEventListener('click',()=>document.getElementById('configFile').click());
+  document.getElementById('configFile').addEventListener('change',async(e)=>{
+    const file=e.target.files&&e.target.files[0];
+    if(!file) return;
+    try{
+      const cfg=validatePersonalConfig(JSON.parse(await file.text()));
+      await PregnancyAppCore.set(PregnancyAppCore.keys.CONFIG_KEY,cfg);
+      location.reload();
+    }catch(err){ alert('Setup import failed: '+err.message); }
+    e.target.value='';
+  });
+  document.getElementById('restoreBtn').addEventListener('click',()=>document.getElementById('restoreFile').click());
+  document.getElementById('restoreFile').addEventListener('change',(e)=>{
+    const file=e.target.files && e.target.files[0];
+    if(file) restoreBackupFile(file).catch(err=>alert('Restore failed: '+err.message));
+    e.target.value='';
+  });
+  document.getElementById('deleteLocalBtn').addEventListener('click',()=>deleteLocalData().catch(e=>alert('Delete failed: '+e.message)));
+  document.getElementById('deleteEverywhereBtn').addEventListener('click',()=>deleteEverywhere().catch(e=>alert('Delete failed: '+e.message)));
+  await refreshBackupState();
+
+  // ---------- Add to Home Screen — universal, works on every browser ----------
+  let deferredPrompt = null;
+  const installBtn = document.getElementById('installBtn');
+  window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt = e; });
+  window.addEventListener('appinstalled', ()=>{ deferredPrompt = null; installBtn.classList.add('hidden'); });
+
+  function isStandalone(){
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  }
+  if(isStandalone()) installBtn.classList.add('hidden');
+
+  function platformInfo(){
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPad|iPhone|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isAndroid = /Android/.test(ua);
+    const iosOtherBrowser = isIOS && /CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+    return { isIOS, isAndroid, iosOtherBrowser };
+  }
+  function openInstallHelp(){
+    const p = platformInfo();
+    const title = document.getElementById('ihTitle');
+    const sub = document.getElementById('ihSub');
+    const steps = document.getElementById('ihSteps');
+    const note = document.getElementById('ihNote');
+    note.style.display = 'none'; note.textContent = '';
+    let stepList = [];
+
+    if(p.isIOS && p.iosOtherBrowser){
+      title.textContent = 'Open in Safari first';
+      sub.innerHTML = 'On iPhone and iPad, only <strong>Safari</strong> can add an app to the Home Screen — this browser can’t. It only takes a moment:';
+      stepList = [
+        'Copy this page’s web address from the bar above.',
+        'Open the <strong>Safari</strong> app and paste the address to load this page there.',
+        'Tap the <span class="ih-glyph">↑</span> Share button, then choose <strong>Add to Home Screen</strong>.'
+      ];
+    } else if(p.isIOS){
+      title.textContent = 'Add to your iPhone Home Screen';
+      sub.innerHTML = 'A couple of quick taps in Safari:';
+      stepList = [
+        'Tap the <span class="ih-glyph">↑</span> <strong>Share</strong> button at the bottom of Safari (the square with an arrow pointing up).',
+        'Scroll down the list and tap <strong>Add to Home Screen</strong>.',
+        'Tap <strong>Add</strong> in the top-right corner.'
+      ];
+      note.style.display = 'block';
+      note.textContent = 'It will then open full-screen like a normal app, with the pregnancy icon on the Home Screen.';
+    } else if(p.isAndroid){
+      title.textContent = 'Add to your Android Home Screen';
+      sub.innerHTML = 'From this browser:';
+      stepList = [
+        'Tap the <span class="ih-glyph">⋮</span> <strong>menu</strong> button (usually top-right).',
+        'Tap <strong>Add to Home screen</strong> (some browsers call it <strong>Install app</strong>).',
+        'Tap <strong>Add</strong> or <strong>Install</strong> to confirm.'
+      ];
+    } else {
+      title.textContent = 'Add to your computer';
+      sub.innerHTML = 'On a Mac or PC:';
+      stepList = [
+        'In <strong>Chrome</strong> or <strong>Edge</strong>, click the install icon <span class="ih-glyph">⊕</span> at the right end of the address bar.',
+        'On a <strong>Mac in Safari</strong>, choose <strong>File → Add to Dock</strong>.',
+        'Confirm, and it opens in its own window like an app.'
+      ];
+    }
+    steps.innerHTML = stepList.map(s=>'<li>'+s+'</li>').join('');
+    document.getElementById('ihOverlay').classList.add('show');
+  }
+  function closeInstallHelp(){ document.getElementById('ihOverlay').classList.remove('show'); }
+
+  installBtn.addEventListener('click', async ()=>{
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      try{ await deferredPrompt.userChoice; }catch(e){}
+      deferredPrompt = null;
+      return;
+    }
+    openInstallHelp();
+  });
+  document.getElementById('ihClose').addEventListener('click', closeInstallHelp);
+  document.getElementById('ihOk').addEventListener('click', closeInstallHelp);
+  document.getElementById('ihOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'ihOverlay') closeInstallHelp(); });
+
+  // ---------- Service worker (offline + installability when hosted) ----------
+  if('serviceWorker' in navigator && window.isSecureContext){
+    window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+  }
+
+  // ---------- Boot ----------
+  const personalConfig=await PregnancyAppCore.get(PregnancyAppCore.keys.CONFIG_KEY);
+  activePersonalConfig=personalConfig;
+  activeConfigCreatedAt=(personalConfig && personalConfig.createdAt) || '';
+  applyPersonalConfig(personalConfig);
+  const loaded = await loadData();
+  if(loaded){
+    allChecklist = loaded.checklist || {};
+    questions = Array.isArray(loaded.questions) ? loaded.questions : [];
+    if(personalConfig && loaded.configCreatedAt !== activeConfigCreatedAt){
+      const existingQuestionText=new Set(questions.map(q=>q.text));
+      questions=questions.concat(SEED_QUESTIONS.filter(q=>!existingQuestionText.has(q.text)));
+    }
+    const menuData = loaded.menu || {};
+    const hasBreakfast = menuData.breakfast && Object.keys(menuData.breakfast).length > 0;
+    weeklyMenu = {
+      breakfast: hasBreakfast ? menuData.breakfast : Object.assign({}, DEFAULT_BREAKFAST_MENU),
+      lunch: menuData.lunch || {}, dinner: menuData.dinner || {}
+    };
+    customDishes = Array.isArray(loaded.customDishes) ? loaded.customDishes : [];
+    customBreakfastDishes = Array.isArray(loaded.customBreakfastDishes) ? loaded.customBreakfastDishes : [];
+    allKicks = loaded.kicks && typeof loaded.kicks === 'object' ? loaded.kicks : {};
+    weights = Array.isArray(loaded.weights) ? loaded.weights : [];
+  } else {
+    questions = SEED_QUESTIONS.slice();
+    if(personalConfig && personalConfig.startingWeight){ weights=[{date:localDateKey(),kg:Number(personalConfig.startingWeight)}]; }
+  }
+  const todayKey = localDateKey();
+  if(!allChecklist[todayKey]) allChecklist[todayKey] = {};
+  checklistState = allChecklist[todayKey];
+  dataUpdatedAt = (loaded && loaded.updatedAt) || 0;
+
+  renderMenuEditor();
+  renderChecklist();
+  renderQuestions();
+  renderHistory();
+  renderKick();
+  renderWeight();
+  await saveData(true);
+  PregnancyAppCore.requestPersistentStorage();
+  await initSync();
+})();
+</script>
+</body>
+</html>
