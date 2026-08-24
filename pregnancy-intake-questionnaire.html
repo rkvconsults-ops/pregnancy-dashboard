@@ -184,7 +184,7 @@
       <div class="field"><label class="q">Maternity or emergency number <span class="opt-tag">(optional)</span></label><input type="tel" name="hospitalEmergency" placeholder="24-hour number, if supplied"></div>
 
       <div class="field"><label class="q">Blood group <span class="opt-tag">(optional)</span></label><select name="bloodGroup"><option value="">Not supplied</option><option value="A Positive">A+</option><option value="A Negative">A−</option><option value="B Positive">B+</option><option value="B Negative">B−</option><option value="AB Positive">AB+</option><option value="AB Negative">AB−</option><option value="O Positive">O+</option><option value="O Negative">O−</option></select></div>
-      <div class="field"><label class="q">Doctor-confirmed high-risk status</label><select name="highRiskStatus"><option value="">Not supplied</option><option>Yes</option><option>No</option></select></div>
+      <div class="field"><label class="q">Pregnancy risk status</label><select name="highRiskStatus"><option value="Not assessed">Not assessed</option><option value="Standard care">Standard care</option><option value="High risk">High risk</option></select><div class="hint">Use the clinician's current classification. This can be changed later in the dashboard.</div></div>
       <div class="field"><label class="q">Known allergies <span class="opt-tag">(optional)</span></label><textarea name="allergies" placeholder="Medicine, food, latex or other confirmed allergies"></textarea></div>
       <div class="field"><label class="q">Next ANC appointment <span class="opt-tag">(optional)</span></label><input type="date" name="nextAncDate"></div>
 
@@ -196,7 +196,7 @@
 
       <div class="field">
         <label class="q">Any diagnosed conditions this pregnancy?</label>
-        <div class="hint">Select all that apply — these trigger extra notes and warnings on the tracker (like the "skip dates if gestational diabetes" note).</div>
+        <div class="hint">Select only conditions diagnosed by the treating clinician.</div>
         <div class="choice-group" data-name="conditions" data-multi="true">
           <label class="choice"><input type="checkbox" name="conditions" value="Gestational diabetes">Gestational diabetes</label>
           <label class="choice"><input type="checkbox" name="conditions" value="Thyroid issue">Thyroid issue</label>
@@ -551,7 +551,7 @@
     out.push('Hospital address: ' + (val('hospitalAddress') || '—'));
     out.push('Maternity / emergency number: ' + (val('hospitalEmergency') || '—'));
     out.push('Blood group / Rh: ' + (val('bloodGroup') || '—'));
-    out.push('Doctor-confirmed high-risk status: ' + (val('highRiskStatus') || '—'));
+    out.push('Pregnancy risk status: ' + (val('highRiskStatus') || 'Not assessed'));
     out.push('Known allergies: ' + (val('allergies') || '—'));
     out.push('Next ANC appointment: ' + (val('nextAncDate') ? fmtDate(val('nextAncDate')) : '—'));
     out.push('Total pregnancies including this one: ' + (val('gravida') || '—'));

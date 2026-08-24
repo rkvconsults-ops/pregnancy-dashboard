@@ -379,6 +379,7 @@
   .care-item{background:var(--paper-soft);border:1px solid var(--line);border-radius:10px;padding:10px 12px;}
   .care-item .k{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-faint);font-weight:700;margin-bottom:4px;}
   .care-item .v{font-size:13px;color:var(--ink);line-height:1.45;white-space:pre-wrap;}
+  .care-item select{width:100%;border:1px solid var(--line);border-radius:8px;padding:7px 8px;background:#fff;font:inherit;color:var(--ink);}
   .doctor-actions a{display:inline-flex;align-items:center;text-decoration:none;margin-right:8px;margin-top:8px;}
   .tracker-group{border-top:1px solid var(--line);padding-top:14px;margin-top:14px;}
   .tracker-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px;}
@@ -507,7 +508,7 @@
       <div class="doctor-actions" id="doctorActions"></div>
       <div class="record-box" id="nextAppointmentCard">
         <h3>Next Appointment</h3>
-        <div class="record-sub">Prepare before the visit, record what was discussed, then complete it to preserve the visit in history.</div>
+        <div class="record-sub">Prepare before the visit, record the doctor's instructions, then complete it to preserve the visit in history.</div>
         <div class="record-grid">
           <div class="record-field"><label for="appointmentDate">Date</label><input type="date" id="appointmentDate"></div>
           <div class="record-field"><label for="appointmentTime">Time</label><input type="time" id="appointmentTime"></div>
@@ -516,12 +517,9 @@
           <div class="record-field full"><label for="appointmentQuestions">Questions to ask</label><textarea id="appointmentQuestions"></textarea></div>
           <div class="record-field full"><label for="appointmentSymptoms">Symptoms or concerns to mention</label><textarea id="appointmentSymptoms"></textarea></div>
           <div class="record-field full"><label for="appointmentReports">Reports to carry</label><textarea id="appointmentReports" placeholder="Record names or storage locations only"></textarea></div>
-          <div class="record-field full"><label for="appointmentDiscussion">What was discussed</label><textarea id="appointmentDiscussion"></textarea></div>
-          <div class="record-field full"><label for="appointmentLearning">What we learned</label><textarea id="appointmentLearning"></textarea></div>
           <div class="record-field full"><label for="appointmentInstructions">Doctor's instructions</label><textarea id="appointmentInstructions"></textarea></div>
           <div class="record-field"><label for="appointmentMedicineChanges">Medicine changes</label><textarea id="appointmentMedicineChanges"></textarea></div>
           <div class="record-field"><label for="appointmentTestsOrdered">Tests or scans ordered</label><textarea id="appointmentTestsOrdered"></textarea></div>
-          <div class="record-field full"><label for="appointmentNextSteps">Next steps</label><textarea id="appointmentNextSteps"></textarea></div>
           <div class="record-field"><label for="appointmentNextDate">Following appointment</label><input type="date" id="appointmentNextDate"></div>
         </div>
         <div class="record-actions"><button class="btn-ghost" id="appointmentSave" type="button">Save appointment</button><button class="btn-primary" id="appointmentComplete" type="button">Complete visit</button></div>
@@ -531,7 +529,7 @@
     </div>
 
     <div class="card col-full" id="careSummaryCard" hidden>
-      <h2>Personal plan details</h2>
+      <h2>Personal details</h2>
       <div class="sub">These details come from the completed questionnaire. They are not medical recommendations from this app.</div>
       <div class="care-grid" id="careSummaryGrid"></div>
     </div>
@@ -549,6 +547,7 @@
         <div class="record-field"><label for="trimesterFoodNotes">Food and fruit plan</label><textarea id="trimesterFoodNotes"></textarea></div>
         <div class="record-field"><label for="trimesterActivityNotes">Doctor-cleared activity plan</label><textarea id="trimesterActivityNotes"></textarea></div>
       </div>
+      <div class="trimester-note" id="trimesterSources">Reference basis: <a href="https://nhm.gov.in/index1.php?lang=1&amp;level=2&amp;lid=218&amp;sublinkid=822" target="_blank" rel="noopener">NHM India</a>, <a href="https://www.who.int/teams/maternal-newborn-child-adolescent-health-and-ageing/handbooks/programme-manager-s-handbook-mncah/recommendations-on-interventions-along-life-course/maternal" target="_blank" rel="noopener">WHO ANC</a>, and <a href="https://www.acog.org/womens-health/faqs/routine-tests-during-pregnancy" target="_blank" rel="noopener">ACOG routine tests</a>. The treating clinician decides what applies and when.</div>
     </div>
 
     <div class="card col-full" id="todayCard">
@@ -1184,15 +1183,21 @@
     const apple=document.querySelector('meta[name="apple-mobile-web-app-title"]');
     if(apple) apple.setAttribute('content',title.slice(0,30));
   }
+  function normalizeRiskStatus(value){
+    const text=String(value||'').trim().toLowerCase();
+    if(['high risk','yes','high-risk'].includes(text))return 'High risk';
+    if(['standard care','normal','no','low risk','low-risk'].includes(text))return 'Standard care';
+    return 'Not assessed';
+  }
   function renderCareSummary(cfg){
     const details=(cfg&&(cfg.details||cfg.context))||{};
     const profile=(cfg&&cfg.profile)||{};
     const rows=[
       ['Date of birth',details.dateOfBirth?new Date(details.dateOfBirth+'T00:00:00').toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):''],
       ['Blood group and Rh',[details.bloodGroup,details.rhFactor].filter(Boolean).join(' ')],
+      ['Pregnancy risk status',normalizeRiskStatus(details.highRiskStatus),'risk'],
       ['Known allergies',details.allergies],
-      ['Pregnancy conditions',Array.isArray(details.conditions)?details.conditions.join(', '):details.conditions],
-      ['Doctor-confirmed high-risk status',details.highRiskStatus],
+      ['Diagnosed conditions',Array.isArray(details.conditions)?details.conditions.join(', '):details.conditions],
       ['Clinician restrictions or precautions',details.conditionsNote||details.activityNote],
       ['Track movement method',profile.kickMethod||details.kickMethod],
       ['Previous pregnancies',[details.gravida&&'Total '+details.gravida,details.priorBirths&&'births '+details.priorBirths,details.miscarriages&&'losses '+details.miscarriages].filter(Boolean).join(' · ')],
@@ -1205,11 +1210,17 @@
     const grid=document.getElementById('careSummaryGrid');
     card.hidden=!rows.length;
     grid.innerHTML='';
-    rows.forEach(([key,value])=>{
+    rows.forEach(([key,value,type])=>{
       const item=document.createElement('div'); item.className='care-item';
       const k=document.createElement('span'); k.className='k'; k.textContent=key;
-      const v=document.createElement('span'); v.className='v'; v.textContent=String(value);
-      item.append(k,v); grid.appendChild(item);
+      if(type==='risk'){
+        const select=document.createElement('select');select.id='riskStatusSelect';select.setAttribute('aria-label','Pregnancy risk status');
+        ['Not assessed','Standard care','High risk'].forEach(optionValue=>{const option=document.createElement('option');option.value=optionValue;option.textContent=optionValue;select.appendChild(option);});
+        select.value=value;
+        select.addEventListener('change',async()=>{const target=activePersonalConfig&&(activePersonalConfig.details||activePersonalConfig.context);if(!target)return;target.highRiskStatus=select.value;await PregnancyAppCore.set(PregnancyAppCore.keys.CONFIG_KEY,activePersonalConfig);await saveData();});
+        item.append(k,select);
+      }else{const v=document.createElement('span');v.className='v';v.textContent=String(value);item.append(k,v);}
+      grid.appendChild(item);
     });
     const kickSub=document.querySelector('#kickCard .sub');
     if(kickSub && profile.kickMethod) kickSub.textContent='Plan-supplied method: '+profile.kickMethod+' Confirm this method with the treating clinician.';
@@ -1227,13 +1238,13 @@
     if(details.hospitalEmergency){const emergency=document.createElement('a');emergency.className='btn-ghost';emergency.href='tel:'+String(details.hospitalEmergency).replace(/[^+0-9]/g,'');emergency.textContent='Call maternity';actions.appendChild(emergency);}
     if(details.hospitalAddress){const map=document.createElement('a');map.className='btn-ghost';map.href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(details.hospitalAddress);map.target='_blank';map.rel='noopener';map.textContent='Open map';actions.appendChild(map);}
   }
-  const APPOINTMENT_FIELDS=['date','time','doctor','hospital','questions','symptoms','reports','discussion','learning','instructions','medicineChanges','testsOrdered','nextSteps','nextDate'];
+  const APPOINTMENT_FIELDS=['date','time','doctor','hospital','questions','symptoms','reports','instructions','medicineChanges','testsOrdered','nextDate'];
   function appointmentElement(key){return document.getElementById('appointment'+key.charAt(0).toUpperCase()+key.slice(1));}
   function readAppointmentForm(){const value={};APPOINTMENT_FIELDS.forEach(key=>value[key]=appointmentElement(key).value.trim());return value;}
   function writeAppointmentForm(value){APPOINTMENT_FIELDS.forEach(key=>appointmentElement(key).value=(value&&value[key])||'');}
   function formatShortDate(value){if(!value)return 'Date not set';const d=new Date(value+'T00:00:00');return isNaN(d)?value:d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}
   function appointmentRows(record){
-    return [['Questions asked',record.questions],['Symptoms or concerns',record.symptoms],['Reports carried',record.reports],['Discussion',record.discussion],['What we learned',record.learning],['Doctor instructions',record.instructions],['Medicine changes',record.medicineChanges],['Tests or scans ordered',record.testsOrdered],['Next steps',record.nextSteps]].filter(row=>row[1]);
+    return [['Questions asked',record.questions],['Symptoms or concerns',record.symptoms],['Reports carried',record.reports],['Doctor instructions',record.instructions],['Medicine changes',record.medicineChanges],['Tests or scans ordered',record.testsOrdered]].filter(row=>row[1]);
   }
   function renderAppointments(){
     const details=(activePersonalConfig&&(activePersonalConfig.details||activePersonalConfig.context))||{};
@@ -1259,23 +1270,41 @@
     if(!record.date){alert('Add the appointment date before completing the visit.');return;}
     if(editingAppointmentId){const index=appointments.history.findIndex(item=>item.id===editingAppointmentId);if(index>=0)appointments.history[index]=Object.assign({},appointments.history[index],record,{editedAt:new Date().toISOString()});editingAppointmentId=null;}
     else appointments.history.push(Object.assign({},record,{id:'visit-'+Date.now(),completedAt:new Date().toISOString()}));
-    appointments.next={date:record.nextDate||'',time:'',doctor:record.doctor,hospital:record.hospital,questions:'',symptoms:'',reports:'',discussion:'',learning:'',instructions:'',medicineChanges:'',testsOrdered:'',nextSteps:'',nextDate:''};
+    appointments.next={date:record.nextDate||'',time:'',doctor:record.doctor,hospital:record.hospital,questions:'',symptoms:'',reports:'',instructions:'',medicineChanges:'',testsOrdered:'',nextDate:''};
     renderAppointments();await saveData();
   }
   document.getElementById('appointmentSave').addEventListener('click',saveAppointment);
   document.getElementById('appointmentComplete').addEventListener('click',completeAppointment);
 
+  const TRIMESTER_PLAN_VERSION=2;
   const TRIMESTER_SEEDS={
-    1:[['Appointment','Register and record the first ANC plan'],['Investigation','Record clinician-ordered baseline blood and urine investigations'],['Ultrasound','Record dating or early ultrasound if offered or ordered'],['Medicine','Review every medicine and supplement with the clinician'],['Nutrition','Record clinician or dietitian nutrition targets'],['Activity','Record doctor-cleared activity']],
-    2:[['Appointment','Record scheduled ANC visits'],['Ultrasound','Record the anomaly ultrasound if offered or ordered'],['Investigation','Record clinician-ordered haemoglobin, urine and glucose screening'],['Medicine','Review medicine and supplement changes'],['Nutrition','Update portion and protein targets'],['Activity','Update doctor-cleared walking and yoga plan']],
-    3:[['Appointment','Record more frequent ANC visits as scheduled'],['Investigation','Record repeat blood and urine investigations ordered'],['Ultrasound','Record growth, position or other ultrasound only if ordered'],['Medicine','Confirm the current medicine schedule'],['Nutrition','Update nutrition and hydration targets'],['Activity','Update activity restrictions and movement plan'],['Preparation','Record birth, hospital and emergency preparation']]
+    1:[
+      ['anc','Appointment','ANC booking','Early pregnancy','Routine'],['cbc','Blood test','CBC / Hb','Booking','Routine'],['blood-group','Blood test','Blood group/Rh','Booking','Routine'],['urine','Urine test','Urine test','Booking','Routine'],['glucose','Blood test','Blood glucose','Booking','Routine'],['hiv','Screening','HIV screen','Early pregnancy','Routine'],['syphilis','Screening','Syphilis screen','Early pregnancy','Routine'],['hepb','Screening','Hepatitis B','Early pregnancy','Routine'],['thyroid','Blood test','Thyroid screen','Booking','India ANC'],['dating','Ultrasound','Dating scan','Before 24 weeks','Clinician timed'],['genetic','Screening','Genetic screen','Early pregnancy','Discuss options']
+    ],
+    2:[
+      ['anc','Appointment','ANC visits','As scheduled','Routine'],['cbc','Blood test','CBC / Hb','As advised','Repeat'],['urine','Urine test','Urine test','ANC visits','Routine'],['gdm','Blood test','GDM test','24–28 weeks','Routine'],['anomaly','Ultrasound','Anomaly scan','By 24 weeks','Clinician timed'],['bp-protein','Check','BP / proteinuria','After 20 weeks','Routine'],['growth','Check','Fetal growth','After 24 weeks','Routine'],['antid','Medicine','Anti-D review','Around 28 weeks','Rh-negative only'],['vaccine','Medicine','Vaccine review','As scheduled','Clinician advised']
+    ],
+    3:[
+      ['anc','Appointment','ANC visits','As scheduled','Routine'],['cbc','Blood test','CBC / Hb','As advised','Repeat'],['urine','Urine test','Urine test','ANC visits','Routine'],['bp-protein','Check','BP / proteinuria','ANC visits','Routine'],['growth','Check','Fetal growth','ANC visits','Routine'],['movement','Check','Fetal movement','Daily plan','Clinician method'],['gbs','Screening','GBS screen','35–37 weeks','Local protocol'],['position','Check','Position check','Late pregnancy','Clinician check'],['birth','Preparation','Birth plan','Late pregnancy','Discuss'],['hospital','Preparation','Hospital preparation','Late pregnancy','Routine'],['vaccine','Medicine','Vaccine review','As scheduled','Clinician advised']
+    ]
   };
   function currentTrimesterNumber(){const ga=computeGA();if(!ga)return 1;return ga.weeks<14?1:(ga.weeks<28?2:3);}
+  function seedTasks(number){return TRIMESTER_SEEDS[number].map(item=>({id:'r8-t'+number+'-'+item[0],category:item[1],name:item[2],timing:item[3],status:'to-discuss',date:'',note:'',source:item[4]}));}
   function defaultTrimesterPlans(){
-    const current=currentTrimesterNumber();const profile=(activePersonalConfig&&activePersonalConfig.profile)||{};
-    return Object.fromEntries([1,2,3].map(number=>[number,{tasks:TRIMESTER_SEEDS[number].map((item,index)=>({id:'t'+number+'-'+index,category:item[0],name:item[1],status:'planned',date:'',note:'',source:'General reference'})),proteinTarget:number===current?(profile.proteinTarget||''):'',hydrationTarget:number===current?(profile.waterTarget||''):'',foodNotes:'',activityNotes:''}]));
+    const current=currentTrimesterNumber();const profile=(activePersonalConfig&&activePersonalConfig.profile)||{};const plans={_version:TRIMESTER_PLAN_VERSION};
+    [1,2,3].forEach(number=>plans[number]={tasks:seedTasks(number),proteinTarget:number===current?(profile.proteinTarget||''):'',hydrationTarget:number===current?(profile.waterTarget||''):'',foodNotes:'',activityNotes:''});return plans;
   }
-  function ensureTrimesterPlans(){if(!trimesterPlans||typeof trimesterPlans!=='object')trimesterPlans=defaultTrimesterPlans();[1,2,3].forEach(number=>{if(!trimesterPlans[number])trimesterPlans[number]=defaultTrimesterPlans()[number];if(!Array.isArray(trimesterPlans[number].tasks))trimesterPlans[number].tasks=[];});}
+  function compactLegacyTask(task){
+    const names={Appointment:'ANC record',Investigation:'Test record',Ultrasound:'Scan record',Medicine:'Medicine record',Nutrition:'Nutrition record',Activity:'Activity record',Preparation:'Preparation record'};
+    return Object.assign({},task,{name:names[task.category]||'Earlier record',timing:'Earlier plan',source:'Earlier record',status:task.status==='planned'?'to-discuss':task.status});
+  }
+  function ensureTrimesterPlans(){
+    if(!trimesterPlans||typeof trimesterPlans!=='object')trimesterPlans=defaultTrimesterPlans();
+    if(trimesterPlans._version!==TRIMESTER_PLAN_VERSION){
+      const fresh=defaultTrimesterPlans();[1,2,3].forEach(number=>{const old=trimesterPlans[number]||{};const recorded=(Array.isArray(old.tasks)?old.tasks:[]).filter(task=>task.source!=='General reference'||task.date||task.note||!['planned','to-discuss'].includes(task.status)).map(compactLegacyTask);fresh[number]=Object.assign({},fresh[number],{proteinTarget:old.proteinTarget||fresh[number].proteinTarget,hydrationTarget:old.hydrationTarget||fresh[number].hydrationTarget,foodNotes:old.foodNotes||'',activityNotes:old.activityNotes||'',tasks:fresh[number].tasks.concat(recorded)});});trimesterPlans=fresh;
+    }
+    [1,2,3].forEach(number=>{if(!trimesterPlans[number])trimesterPlans[number]=defaultTrimesterPlans()[number];if(!Array.isArray(trimesterPlans[number].tasks))trimesterPlans[number].tasks=[];});
+  }
   function renderTrimesterPlanner(){
     ensureTrimesterPlans();const current=currentTrimesterNumber();if(!selectedTrimester)selectedTrimester=current;
     document.getElementById('trimesterCurrentLabel').textContent='Current: '+(['','1st','2nd','3rd'][current])+' trimester';
@@ -1283,8 +1312,8 @@
     const plan=trimesterPlans[selectedTrimester];const host=document.getElementById('trimesterTaskList');host.innerHTML='';
     plan.tasks.forEach(task=>{
       const row=document.createElement('div');row.className='trimester-task';
-      row.innerHTML='<div class="trimester-task-name">'+escapeHtml(task.name)+'<small>'+escapeHtml(task.category)+' · '+escapeHtml(task.source||'Personal plan')+'</small></div><select class="trimester-task-status"><option value="planned">Planned</option><option value="booked">Booked</option><option value="completed">Completed</option><option value="skipped">Skipped</option><option value="not-applicable">Not applicable</option></select><input class="trimester-task-date" type="date"><input class="trimester-task-note" type="text" placeholder="Result or notes, no interpretation">';
-      const status=row.querySelector('.trimester-task-status');status.value=task.status||'planned';status.addEventListener('change',()=>{task.status=status.value;saveData();});
+      row.innerHTML='<div class="trimester-task-name">'+escapeHtml(task.name)+'<small>'+escapeHtml(task.category)+' · '+escapeHtml(task.timing||'Clinician timed')+' · '+escapeHtml(task.source||'Personal plan')+'</small></div><select class="trimester-task-status"><option value="to-discuss">To discuss</option><option value="doctor-advised">Doctor advised</option><option value="booked">Booked</option><option value="completed">Completed</option><option value="not-advised">Not advised</option><option value="skipped">Skipped</option></select><input class="trimester-task-date" type="date"><input class="trimester-task-note" type="text" placeholder="Result or notes, no interpretation">';
+      const status=row.querySelector('.trimester-task-status');status.value=task.status==='planned'?'to-discuss':(task.status||'to-discuss');status.addEventListener('change',()=>{task.status=status.value;saveData();});
       const date=row.querySelector('.trimester-task-date');date.value=task.date||'';date.addEventListener('change',()=>{task.date=date.value;saveData();});
       const note=row.querySelector('.trimester-task-note');note.value=task.note||'';note.addEventListener('change',()=>{task.note=note.value;saveData();});
       host.appendChild(row);
@@ -1292,7 +1321,7 @@
     document.getElementById('trimesterProteinTarget').value=plan.proteinTarget||'';document.getElementById('trimesterHydrationTarget').value=plan.hydrationTarget||'';document.getElementById('trimesterFoodNotes').value=plan.foodNotes||'';document.getElementById('trimesterActivityNotes').value=plan.activityNotes||'';
   }
   document.querySelectorAll('.trimester-tab').forEach(button=>button.addEventListener('click',()=>{selectedTrimester=Number(button.dataset.trimester);renderTrimesterPlanner();}));
-  document.getElementById('trimesterAddBtn').addEventListener('click',()=>{const name=document.getElementById('trimesterAddName').value.trim();if(!name)return;ensureTrimesterPlans();trimesterPlans[selectedTrimester].tasks.push({id:'custom-'+Date.now(),category:document.getElementById('trimesterAddCategory').value,name,status:'planned',date:'',note:'',source:'Doctor-confirmed personal plan'});document.getElementById('trimesterAddName').value='';renderTrimesterPlanner();saveData();});
+  document.getElementById('trimesterAddBtn').addEventListener('click',()=>{const name=document.getElementById('trimesterAddName').value.trim();if(!name)return;ensureTrimesterPlans();trimesterPlans[selectedTrimester].tasks.push({id:'custom-'+Date.now(),category:document.getElementById('trimesterAddCategory').value,name,timing:'Clinician timed',status:'doctor-advised',date:'',note:'',source:'Doctor-confirmed'});document.getElementById('trimesterAddName').value='';renderTrimesterPlanner();saveData();});
   [['trimesterProteinTarget','proteinTarget'],['trimesterHydrationTarget','hydrationTarget'],['trimesterFoodNotes','foodNotes'],['trimesterActivityNotes','activityNotes']].forEach(([id,key])=>document.getElementById(id).addEventListener('change',e=>{ensureTrimesterPlans();trimesterPlans[selectedTrimester][key]=e.target.value.trim();saveData();}));
   function applyPersonalConfig(raw){
     if(!raw){
@@ -1721,7 +1750,7 @@
       const cfg=validatePersonalConfig(JSON.parse(await file.text()));
       await PregnancyAppCore.set(PregnancyAppCore.keys.CONFIG_KEY,cfg);
       const next=new URL(location.href);
-      next.searchParams.set('release','7');
+      next.searchParams.set('release','8');
       next.searchParams.set('setup',String(Date.now()));
       location.replace(next.href);
     }catch(err){ alert('Setup import failed: '+err.message); }
