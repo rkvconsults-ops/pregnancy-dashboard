@@ -1,7 +1,7 @@
 /* Pregnancy Dashboard service worker — caches only the app's own files (offline shell).
    It never touches cross-origin requests, so encrypted sync traffic
    always goes straight to the network, untouched. */
-const CACHE = 'preg-dash-v5';
+const CACHE = 'preg-dash-v7';
 const ASSETS = [
   './',
   './index.html',
@@ -9,10 +9,10 @@ const ASSETS = [
   './sync-config.js',
   './qrcode-generator.js',
   './pregnancy-intake-questionnaire.html',
-  './manifest-v2.webmanifest',
-  './icon-192-v2.png',
-  './icon-512-v2.png',
-  './apple-touch-icon-v2.png'
+  './manifest-v3.webmanifest',
+  './icon-192-v3.png',
+  './icon-512-v3.png',
+  './apple-touch-icon-v3.png'
 ];
 
 self.addEventListener('install', (e) => {
@@ -33,16 +33,16 @@ self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
   if (e.request.method !== 'GET') return;              // never touch writes (sync PUTs)
   if (url.origin !== self.location.origin) return;      // never touch cross-origin sync traffic
-  e.respondWith(
-    caches.match(e.request).then((cached) => {
-      const network = fetch(e.request).then((resp) => {
-        if (resp && resp.ok) {
-          const copy = resp.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, copy));
-        }
-        return resp;
-      }).catch(() => cached);
-      return cached || network;
-    })
-  );
+  const networkFirst = e.request.mode === 'navigate' || ['document','script','manifest'].includes(e.request.destination);
+  if(networkFirst){
+    e.respondWith(fetch(e.request).then(resp=>{
+      if(resp&&resp.ok){const copy=resp.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));}
+      return resp;
+    }).catch(()=>caches.match(e.request)));
+    return;
+  }
+  e.respondWith(caches.match(e.request).then(cached=>cached||fetch(e.request).then(resp=>{
+    if(resp&&resp.ok){const copy=resp.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));}
+    return resp;
+  })));
 });

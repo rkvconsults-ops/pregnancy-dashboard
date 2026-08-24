@@ -11,9 +11,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Pregnancy">
-<link rel="manifest" href="manifest-v2.webmanifest">
-<link rel="icon" href="icon-192-v2.png" type="image/png">
-<link rel="apple-touch-icon" href="apple-touch-icon-v2.png">
+<link rel="manifest" href="manifest-v3.webmanifest">
+<link rel="icon" href="icon-192-v3.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon-v3.png">
 
 <style>
   :root{
@@ -370,6 +370,8 @@
   .backup-state{font-size:12px; color:var(--ink-soft); margin-top:9px;}
   .sync-qr{width:210px; max-width:100%; margin:12px 0; padding:10px; background:#fff; border:1px solid var(--line); border-radius:10px;}
   .sync-qr svg{display:block; width:100%; height:auto;}
+  .brand-lockup{display:flex;align-items:center;gap:10px;min-width:0;}
+  .brand-logo{width:48px;height:48px;border-radius:13px;box-shadow:0 3px 12px rgba(10,45,38,.18);flex:none;}
   .setup-card{background:linear-gradient(135deg,var(--accent-soft),#fff); border-color:#BFD8D0;}
   .setup-actions{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px;}
   .setup-actions a{text-decoration:none;display:inline-flex;align-items:center;}
@@ -388,7 +390,7 @@
   <div class="hero">
     <div class="hero-head">
       <button class="install-btn" id="installBtn" type="button">＋ Add to Home Screen</button>
-      <p class="hero-title" id="dashboardTitle">Pregnancy Dashboard</p>
+      <div class="brand-lockup"><img class="brand-logo" src="icon-192-v3.png" alt=""><p class="hero-title" id="dashboardTitle">Pregnancy Dashboard</p></div>
     </div>
     <div class="hero-top">
       <div>
@@ -1399,7 +1401,10 @@
     try{
       const cfg=validatePersonalConfig(JSON.parse(await file.text()));
       await PregnancyAppCore.set(PregnancyAppCore.keys.CONFIG_KEY,cfg);
-      location.reload();
+      const next=new URL(location.href);
+      next.searchParams.set('release','3');
+      next.searchParams.set('setup',String(Date.now()));
+      location.replace(next.href);
     }catch(err){ alert('Setup import failed: '+err.message); }
     e.target.value='';
   });
