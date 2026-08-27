@@ -153,13 +153,13 @@
   .redflag .rf-foot{font-size:12px; color:#6B342C; margin-top:12px;}
 
   /* ---------- Grid / Cards ---------- */
-  .grid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px;}
+  .grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; margin-top:16px;}
   .col-full{grid-column:1 / -1;}
   @media (max-width:780px){ .grid{grid-template-columns:1fr;} }
 
   .card{
     background:var(--surface); border:1px solid var(--line);
-    border-radius:16px; padding:22px; box-shadow:var(--shadow);
+    border-radius:16px; padding:22px; box-shadow:var(--shadow); min-width:0;
   }
   .card h2{
     font-size:16px; font-weight:700; margin:0 0 3px; color:var(--ink);
@@ -306,7 +306,7 @@
   /* questions */
   .q-add{display:flex; gap:8px; margin-bottom:14px;}
   .q-add input[type=text]{
-    flex:1; padding:11px 12px; border:1px solid var(--line); border-radius:10px;
+    flex:1; min-width:0; padding:11px 12px; border:1px solid var(--line); border-radius:10px;
     font-family:inherit; font-size:13.5px; background:#fff; color:var(--ink);
   }
   .q-add input[type=text]:focus{border-color:var(--accent);}
@@ -435,7 +435,7 @@
   .today-dock-next{display:block;margin-top:4px;font-size:12px;line-height:1.35;color:var(--ink-mid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .today-dock:focus-visible{outline:3px solid rgba(47,125,110,.28);outline-offset:2px;}
   #todayCard{scroll-margin-top:18px;}
-  @media(max-width:640px){body{padding-bottom:92px}.today-dock{right:10px;bottom:10px;width:calc(100vw - 20px)}.settings-panel{border-radius:0}.walk-grid{grid-template-columns:72px 1fr}.segment button{padding:7px 8px}.record-grid,.trimester-plan-grid{grid-template-columns:1fr}.trimester-task{grid-template-columns:1fr 1fr}.trimester-task-name,.trimester-task-note{grid-column:1/-1}.trimester-add{grid-template-columns:1fr}.appointment-entry dl{grid-template-columns:1fr}}
+  @media(max-width:640px){body{padding-bottom:92px}.today-dock{right:10px;bottom:10px;width:calc(100vw - 20px)}.settings-panel{border-radius:0}.hero-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}.hero-head .brand-lockup{grid-column:1;grid-row:1}.hero-head .settings-gear{grid-column:2;grid-row:1}.hero-head .install-btn{grid-column:1/-1;grid-row:2;justify-self:start}.hero-title{font-size:13px;line-height:1.3;overflow-wrap:anywhere}.grid{grid-template-columns:minmax(0,1fr)}.walk-grid{grid-template-columns:72px minmax(0,1fr)}.segment{min-width:0;overflow-x:auto}.segment button{padding:7px 8px}.record-grid,.trimester-plan-grid{grid-template-columns:minmax(0,1fr)}.trimester-task{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.trimester-task-name,.trimester-task-note{grid-column:1/-1}.trimester-add{grid-template-columns:minmax(0,1fr)}.appointment-entry dl{grid-template-columns:minmax(0,1fr)}}
 
   @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
 </style>
@@ -1314,8 +1314,8 @@
       const row=document.createElement('div');row.className='trimester-task';
       row.innerHTML='<div class="trimester-task-name">'+escapeHtml(task.name)+'<small>'+escapeHtml(task.category)+' · '+escapeHtml(task.timing||'Clinician timed')+' · '+escapeHtml(task.source||'Personal plan')+'</small></div><select class="trimester-task-status"><option value="to-discuss">To discuss</option><option value="doctor-advised">Doctor advised</option><option value="booked">Booked</option><option value="completed">Completed</option><option value="not-advised">Not advised</option><option value="skipped">Skipped</option></select><input class="trimester-task-date" type="date"><input class="trimester-task-note" type="text" placeholder="Result or notes, no interpretation">';
       const status=row.querySelector('.trimester-task-status');status.value=task.status==='planned'?'to-discuss':(task.status||'to-discuss');status.addEventListener('change',()=>{task.status=status.value;saveData();});
-      const date=row.querySelector('.trimester-task-date');date.value=task.date||'';date.addEventListener('change',()=>{task.date=date.value;saveData();});
-      const note=row.querySelector('.trimester-task-note');note.value=task.note||'';note.addEventListener('change',()=>{task.note=note.value;saveData();});
+      const date=row.querySelector('.trimester-task-date');date.value=task.date||'';const persistDate=()=>{task.date=date.value;saveData();};date.addEventListener('input',persistDate);date.addEventListener('change',persistDate);
+      const note=row.querySelector('.trimester-task-note');note.value=task.note||'';const persistNote=()=>{task.note=note.value;saveData();};note.addEventListener('input',persistNote);note.addEventListener('change',persistNote);
       host.appendChild(row);
     });
     document.getElementById('trimesterProteinTarget').value=plan.proteinTarget||'';document.getElementById('trimesterHydrationTarget').value=plan.hydrationTarget||'';document.getElementById('trimesterFoodNotes').value=plan.foodNotes||'';document.getElementById('trimesterActivityNotes').value=plan.activityNotes||'';
