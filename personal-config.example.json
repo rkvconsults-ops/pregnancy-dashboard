@@ -19,6 +19,6 @@
     "snacks": []
   },
   "weeklyMenu": { "breakfast": {} },
-  "details": {},
+  "details": { "herName": "Example Person" },
   "startingWeight": null
 }
