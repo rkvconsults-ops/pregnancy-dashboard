@@ -1430,7 +1430,8 @@
     EDD=new Date(cfg.profile.expectedDate+'T00:00:00');
     setPersonalAppName(cfg.profile.displayName || 'Pregnancy Journey');
     document.getElementById('eddDisplay').textContent=EDD.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-    document.getElementById('medicalDisclaimer').textContent=cfg.profile.medicalDisclaimer || document.getElementById('medicalDisclaimer').textContent;
+    const suppliedDisclaimer=cfg.profile.medicalDisclaimer || document.getElementById('medicalDisclaimer').textContent;
+    document.getElementById('medicalDisclaimer').textContent=String(suppliedDisclaimer).replace(/\bDashboard\b/g,'Journey').replace(/\bdashboard\b/g,'journey');
     const protein=document.getElementById('proteinGoal');
     if(cfg.profile.proteinTarget){ protein.hidden=false; protein.innerHTML='Daily protein target supplied in the plan: <strong>'+escapeHtml(cfg.profile.proteinTarget)+'</strong>.'; }
     else protein.hidden=true;
