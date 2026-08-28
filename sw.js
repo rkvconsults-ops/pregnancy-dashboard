@@ -1,7 +1,7 @@
-/* Pregnancy Dashboard service worker — caches only the app's own files (offline shell).
+/* Preg Journey Tracker service worker caches only the app's own files (offline shell).
    It never touches cross-origin requests, so encrypted sync traffic
    always goes straight to the network, untouched. */
-const CACHE = 'preg-dash-v17';
+const CACHE = 'preg-dash-v18';
 const ASSETS = [
   './',
   './index.html',
@@ -9,6 +9,8 @@ const ASSETS = [
   './sync-config.js',
   './qrcode-generator.js',
   './pregnancy-intake-questionnaire.html',
+  './COPYRIGHT.md',
+  './THIRD_PARTY_NOTICES.md',
   './manifest-v3.webmanifest',
   './icon-192-v3.png',
   './icon-512-v3.png',

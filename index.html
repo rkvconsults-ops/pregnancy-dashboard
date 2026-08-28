@@ -3,14 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Pregnancy Dashboard</title>
+<title>Preg Journey Tracker</title>
+<meta name="author" content="Rahul K Vimal">
+<meta name="copyright" content="© 2026 Rahul K Vimal">
 
 <!-- PWA / installable -->
 <meta name="theme-color" content="#F6B38F">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Pregnancy">
+<meta name="apple-mobile-web-app-title" content="Preg Journey">
 <link rel="manifest" href="manifest-v3.webmanifest">
 <link rel="icon" href="icon-192-v3.png" type="image/png">
 <link rel="apple-touch-icon" href="apple-touch-icon-v3.png">
@@ -70,7 +72,10 @@
     box-shadow:var(--shadow);
   }
   .hero-head{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px;}
-  .hero-title{font-size:15px; font-weight:600; letter-spacing:0.02em; opacity:0.9; margin:0 0 0 auto;}
+  .brand-copy{min-width:0;}
+  .product-name{font-size:15px;font-weight:700;letter-spacing:.01em;margin:0;color:#4B2E3D;}
+  .creator-credit{font-size:10.5px;font-weight:600;letter-spacing:.02em;margin:2px 0 0;color:rgba(75,46,61,.76);}
+  .journey-name{font-size:12px;font-weight:700;color:#4B2E3D;margin:0 0 5px;}
   .install-btn{
     display:inline-flex; align-items:center; gap:7px;
     background:rgba(255,255,255,0.38); color:#4B2E3D; border:1px solid rgba(75,46,61,0.2);
@@ -330,6 +335,11 @@
   .q-empty{font-size:12.5px; color:var(--ink-soft); font-style:italic; padding:10px 4px;}
 
   .footnote{max-width:1000px; margin:22px auto 0; font-size:11.5px; color:var(--ink-faint); text-align:center; padding:0 12px; line-height:1.6;}
+  .legal-footer{max-width:1000px;margin:12px auto 0;padding:13px 12px 0;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-soft);text-align:center;line-height:1.6;}
+  .legal-about{margin-top:16px;border-top:1px solid var(--line);padding-top:14px;}
+  .legal-about summary{cursor:pointer;font-size:13px;font-weight:750;color:var(--ink);}
+  .legal-about p{font-size:12px;color:var(--ink-soft);line-height:1.55;margin:10px 0 0;}
+  .legal-about a{color:var(--accent-deep);font-weight:650;}
 
   /* ---------- Sync ---------- */
   .sync-row{display:flex; align-items:center; gap:10px; flex-wrap:wrap;}
@@ -458,7 +468,7 @@
   .today-dock-next{display:block;margin-top:4px;font-size:12px;line-height:1.35;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .today-dock:focus-visible{outline:3px solid rgba(185,78,107,.28);outline-offset:2px;}
   #todayCard{scroll-margin-top:18px;}
-  @media(max-width:640px){body{padding-bottom:92px}.today-dock{right:10px;bottom:10px;width:calc(100vw - 20px)}.settings-panel{border-radius:0}.hero-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}.hero-head .brand-lockup{grid-column:1;grid-row:1}.hero-head .settings-gear{grid-column:2;grid-row:1}.hero-head .install-btn{grid-column:1/-1;grid-row:2;justify-self:start}.hero-title{font-size:13px;line-height:1.3;overflow-wrap:anywhere}.grid{grid-template-columns:minmax(0,1fr)}.activity-row{grid-template-columns:72px minmax(0,1fr)}.segment{min-width:0;overflow-x:auto}.segment button{padding:7px 8px}.record-grid,.trimester-plan-grid{grid-template-columns:minmax(0,1fr)}.trimester-task{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.trimester-task-name,.trimester-task-note{grid-column:1/-1}.trimester-add{grid-template-columns:minmax(0,1fr)}.appointment-entry dl{grid-template-columns:minmax(0,1fr)}.collapsible-card>summary{padding:14px 16px;align-items:flex-start}.collapse-heading{white-space:normal}.collapse-summary{flex-wrap:wrap;justify-content:flex-end}.collapse-body{padding:15px 16px 18px}.summary-call,.summary-pill{padding:5px 9px}.collapse-summary-text{max-width:55vw}}
+  @media(max-width:640px){body{padding-bottom:92px}.today-dock{right:10px;bottom:10px;width:calc(100vw - 20px)}.settings-panel{border-radius:0}.hero-head{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}.hero-head .brand-lockup{grid-column:1;grid-row:1}.hero-head .settings-gear{grid-column:2;grid-row:1}.hero-head .install-btn{grid-column:1/-1;grid-row:2;justify-self:start}.product-name{font-size:13px;line-height:1.3;overflow-wrap:anywhere}.creator-credit{font-size:10px}.grid{grid-template-columns:minmax(0,1fr)}.activity-row{grid-template-columns:72px minmax(0,1fr)}.segment{min-width:0;overflow-x:auto}.segment button{padding:7px 8px}.record-grid,.trimester-plan-grid{grid-template-columns:minmax(0,1fr)}.trimester-task{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.trimester-task-name,.trimester-task-note{grid-column:1/-1}.trimester-add{grid-template-columns:minmax(0,1fr)}.appointment-entry dl{grid-template-columns:minmax(0,1fr)}.collapsible-card>summary{padding:14px 16px;align-items:flex-start}.collapse-heading{white-space:normal}.collapse-summary{flex-wrap:wrap;justify-content:flex-end}.collapse-body{padding:15px 16px 18px}.summary-call,.summary-pill{padding:5px 9px}.collapse-summary-text{max-width:55vw}}
 
   @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
 </style>
@@ -475,11 +485,12 @@
   <div class="hero">
     <div class="hero-head">
       <button class="install-btn" id="installBtn" type="button">＋ Add to Home Screen</button>
-      <div class="brand-lockup"><img class="brand-logo" src="icon-192-v3.png" alt=""><p class="hero-title" id="dashboardTitle">Pregnancy Dashboard</p></div>
+      <div class="brand-lockup"><img class="brand-logo" src="icon-192-v3.png" alt=""><div class="brand-copy"><p class="product-name" id="productName">Preg Journey Tracker</p><p class="creator-credit" id="creatorCredit">Created by Rahul K Vimal</p></div></div>
       <button class="settings-gear" id="settingsBtn" type="button" aria-label="Open settings">⚙</button>
     </div>
     <div class="hero-top">
       <div>
+        <div class="journey-name" id="journeyTitle">Pregnancy Journey</div>
         <div class="hero-week">
           <span class="num" id="gaWeeks">--</span>
           <span class="label" id="gaLabel">weeks</span>
@@ -517,7 +528,7 @@
   <div class="grid">
 
     <div class="card col-full setup-card" id="setupCard">
-      <h2>Create a tailored dashboard</h2>
+      <h2>Create a tailored journey</h2>
       <div class="sub">Complete the private questionnaire on this device, download the setup file, then import it here. The person's answers are not uploaded or stored in GitHub.</div>
       <div class="setup-actions">
         <a class="btn-primary" href="pregnancy-intake-questionnaire.html">Open private questionnaire</a>
@@ -725,6 +736,12 @@
         <button class="btn-ghost danger-btn" id="deleteEverywhereBtn" type="button">Delete everywhere</button>
       </div>
       <div class="backup-state" id="backupState">No backup created on this device yet.</div>
+      <details class="legal-about" id="aboutLegal">
+        <summary>About &amp; Legal</summary>
+        <p>Preg Journey Tracker is an independent digital product created and maintained by Rahul K Vimal.</p>
+        <p>Product concept, original interface, application content and custom code © 2026 Rahul K Vimal. All rights reserved. Third-party components remain governed by their respective licences.</p>
+        <p><a href="COPYRIGHT.md" target="_blank" rel="noopener">Copyright notice</a> · <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">Third-party notices</a></p>
+      </details>
     </div>
     </div>
   </div>
@@ -740,7 +757,8 @@
     </div>
   </div>
 
-  <div class="footnote" id="medicalDisclaimer">This dashboard organises information supplied by you. It is not medical advice. Confirm medicines, diet, movement targets and symptoms with the treating clinician. Entries are stored on this device and are only shared as encrypted data when private sync is enabled.</div>
+  <div class="footnote" id="medicalDisclaimer">This journey organises information supplied by you. It is not medical advice. Confirm medicines, diet, movement targets and symptoms with the treating clinician. Entries are stored on this device and are only shared as encrypted data when private sync is enabled.</div>
+  <div class="legal-footer">© 2026 Rahul K Vimal. Preg Journey Tracker. All rights reserved.</div>
 </div>
 
 <script src="qrcode-generator.js"></script>
@@ -1225,11 +1243,12 @@
     return cfg;
   }
   function setPersonalAppName(name){
-    const title=name || 'Pregnancy Dashboard';
-    document.getElementById('dashboardTitle').textContent=title;
-    document.title=title;
+    const supplied=String(name||'').trim();
+    const title=(supplied||'Pregnancy Journey').replace(/\bDashboard\b/gi,'Journey');
+    document.getElementById('journeyTitle').textContent=title;
+    document.title=title==='Pregnancy Journey'?'Preg Journey Tracker':title+' | Preg Journey Tracker';
     const apple=document.querySelector('meta[name="apple-mobile-web-app-title"]');
-    if(apple) apple.setAttribute('content',title.slice(0,30));
+    if(apple) apple.setAttribute('content','Preg Journey');
   }
   function normalizeRiskStatus(value){
     const text=String(value||'').trim().toLowerCase();
@@ -1246,7 +1265,7 @@
   function getPersonalName(details,profile){
     if(hasSuppliedValue(details.herName))return String(details.herName).trim();
     const display=String(profile.displayName||'').trim();
-    const match=display.match(/^(.+?)[’']s Pregnancy Dashboard$/i);
+    const match=display.match(/^(.+?)[’']s Pregnancy (?:Journey|Dashboard)$/i);
     return match?match[1].trim():'';
   }
   function updatePersonalSummary(details,profile){
@@ -1403,13 +1422,13 @@
       document.getElementById('setupCard').hidden=false;
       document.getElementById('careSummaryCard').hidden=true;
       document.getElementById('doctorCard').hidden=true;
-      setPersonalAppName('Pregnancy Dashboard');
+      setPersonalAppName('Pregnancy Journey');
       fillList('doList',DOS); fillList('dontList',DONTS); renderHero(); return;
     }
     const cfg=validatePersonalConfig(raw);
     document.getElementById('setupCard').hidden=true;
     EDD=new Date(cfg.profile.expectedDate+'T00:00:00');
-    setPersonalAppName(cfg.profile.displayName || 'Pregnancy Dashboard');
+    setPersonalAppName(cfg.profile.displayName || 'Pregnancy Journey');
     document.getElementById('eddDisplay').textContent=EDD.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
     document.getElementById('medicalDisclaimer').textContent=cfg.profile.medicalDisclaimer || document.getElementById('medicalDisclaimer').textContent;
     const protein=document.getElementById('proteinGoal');
@@ -1576,7 +1595,7 @@
       const code=syncCodeString(syncConfig);
       document.getElementById('syncCodeDisplay').textContent=code;
       const qr=qrcode(0,'M'); qr.addData(syncQrLink(syncConfig)); qr.make();
-      document.getElementById('syncQr').innerHTML=qr.createSvgTag(4,4,'Recovery QR code','Pregnancy Dashboard recovery QR code');
+      document.getElementById('syncQr').innerHTML=qr.createSvgTag(4,4,'Recovery QR code','Preg Journey Tracker recovery QR code');
     }
   }
   function syncCodeString(cfg){ return PregnancyAppCore.encodeRecovery({secret:cfg.passphrase,recordId:cfg.pathid,endpoint:cfg.url,capability:cfg.authToken}); }
@@ -1778,7 +1797,7 @@
     if(backupPassphrase.length<12){ alert('Use at least 12 characters. The backup was not created.'); return; }
     const payload={format:'pregnancy-dashboard-backup',version:1,createdAt:new Date().toISOString(),data:currentPayload(),config:await PregnancyAppCore.get(PregnancyAppCore.keys.CONFIG_KEY)};
     const encrypted=await PregnancyAppCore.encryptJson(payload,backupPassphrase);
-    downloadJson('pregnancy-dashboard-backup-'+localDateKey()+'.json',{format:'pregnancy-dashboard-encrypted-backup',version:1,envelope:encrypted});
+    downloadJson('pregnancy-journey-backup-'+localDateKey()+'.json',{format:'pregnancy-dashboard-encrypted-backup',version:1,envelope:encrypted});
     await PregnancyAppCore.set(PregnancyAppCore.keys.META_KEY,{lastBackupAt:Date.now()});
     await refreshBackupState();
   }
@@ -1798,7 +1817,7 @@
     location.reload();
   }
   async function deleteLocalData(){
-    if(!confirm("Delete all dashboard entries and settings from this device? This cannot be undone without a backup.")) return;
+    if(!confirm("Delete all journey entries and settings from this device? This cannot be undone without a backup.")) return;
     await clearLocalOnly();
   }
   async function deleteEverywhere(){

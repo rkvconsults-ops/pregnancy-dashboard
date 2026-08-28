@@ -2,11 +2,11 @@
   "version": 2,
   "createdAt": "2026-08-24T00:00:00.000Z",
   "profile": {
-    "displayName": "Example Pregnancy Dashboard",
+    "displayName": "Example Pregnancy Journey",
     "expectedDate": "2027-12-31",
     "waterTarget": "",
     "kickMethod": "",
-    "medicalDisclaimer": "This dashboard organises information supplied by you. It is not medical advice. Confirm medicines, diet, movement targets and symptoms with the treating clinician."
+    "medicalDisclaimer": "This journey organises information supplied by you. It is not medical advice. Confirm medicines, diet, movement targets and symptoms with the treating clinician."
   },
   "dailyPlan": [],
   "dos": [],

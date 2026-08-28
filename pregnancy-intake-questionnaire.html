@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pregnancy Tracker — Intake Questionnaire</title>
+<title>Preg Journey Tracker | Intake Questionnaire</title>
+<meta name="author" content="Rahul K Vimal">
+<meta name="copyright" content="© 2026 Rahul K Vimal">
 <style>
   :root{
     --bg:#FFF7F4;
@@ -48,6 +50,7 @@
   .hero h1{font-size:22px; font-weight:700; margin:0 0 8px; letter-spacing:-0.01em;}
   .hero p{font-size:13.5px; opacity:0.88; margin:0; max-width:560px;}
   .hero .meta{font-size:12px; opacity:0.75; margin-top:14px;}
+  .hero .creator-credit{font-size:11.5px;font-weight:700;margin:0 0 10px;opacity:.78;letter-spacing:.02em;}
 
   .progress-wrap{margin-top:16px; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px 18px; box-shadow:var(--shadow); display:flex; align-items:center; gap:14px;}
   .progress-track{flex:1; height:7px; background:var(--line); border-radius:99px; overflow:hidden;}
@@ -117,6 +120,7 @@
   .summary-box pre{white-space:pre-wrap; word-break:break-word; font-family:'SFMono-Regular', Menlo, Consolas, monospace; font-size:12px; color:#F9EDF2; margin:0; line-height:1.6; max-height:340px; overflow:auto;}
 
   .footnote{max-width:760px; margin:20px auto 0; font-size:11.5px; color:var(--ink-faint); text-align:center; padding:0 12px; line-height:1.6;}
+  .legal-footer{max-width:760px;margin:12px auto 0;padding:13px 12px 0;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-soft);text-align:center;line-height:1.6;}
   .required-mark{color:var(--alert); margin-left:2px;}
 
   @media (prefers-reduced-motion: reduce){ *{transition:none !important;} }
@@ -126,7 +130,8 @@
 <div class="wrap">
 
   <div class="hero">
-    <h1>Pregnancy Tracker — Intake Questionnaire</h1>
+    <h1>Preg Journey Tracker | Intake Questionnaire</h1>
+    <div class="creator-credit">Created by Rahul K Vimal</div>
     <p>Fill this in for yourself, or for the pregnant family member you're setting a daily tracker up for. Answer what you know — anything left blank just gets skipped or defaulted to general guidance, clearly marked as such.</p>
     <div class="meta">Takes about 8–10 minutes · nothing here is submitted anywhere · answers stay on this device until you copy or download them</div>
   </div>
@@ -171,7 +176,7 @@
     <div class="card">
       <div class="sec-num">Section 2 of 9</div>
       <h2>Dates &amp; care</h2>
-      <div class="sub">This drives the week counter, trimester, and days-to-go on the dashboard.</div>
+      <div class="sub">This drives the week counter, trimester, and days-to-go in the journey.</div>
 
       <div class="field">
         <label class="q">Expected date of delivery (EDD), if known</label>
@@ -190,7 +195,7 @@
       <div class="field"><label class="q">Maternity or emergency number <span class="opt-tag">(optional)</span></label><input type="tel" name="hospitalEmergency" placeholder="24-hour number, if supplied"></div>
 
       <div class="field"><label class="q">Blood group <span class="opt-tag">(optional)</span></label><select name="bloodGroup"><option value="">Not supplied</option><option value="A Positive">A+</option><option value="A Negative">A−</option><option value="B Positive">B+</option><option value="B Negative">B−</option><option value="AB Positive">AB+</option><option value="AB Negative">AB−</option><option value="O Positive">O+</option><option value="O Negative">O−</option></select></div>
-      <div class="field"><label class="q">Pregnancy risk status</label><select name="highRiskStatus"><option value="Not assessed">Not assessed</option><option value="Standard care">Standard care</option><option value="High risk">High risk</option></select><div class="hint">Use the clinician's current classification. This can be changed later in the dashboard.</div></div>
+      <div class="field"><label class="q">Pregnancy risk status</label><select name="highRiskStatus"><option value="Not assessed">Not assessed</option><option value="Standard care">Standard care</option><option value="High risk">High risk</option></select><div class="hint">Use the clinician's current classification. This can be changed later in the journey.</div></div>
       <div class="field"><label class="q">Known allergies <span class="opt-tag">(optional)</span></label><textarea name="allergies" placeholder="Medicine, food, latex or other confirmed allergies"></textarea></div>
       <div class="field"><label class="q">Next ANC appointment <span class="opt-tag">(optional)</span></label><input type="date" name="nextAncDate"></div>
 
@@ -395,6 +400,7 @@
   </div>
 
   <div class="footnote">Your answers are only kept in this browser's memory while the page is open (with a light auto-save to this device so a refresh doesn't lose your progress) — nothing is uploaded or sent anywhere unless you copy or download it yourself and share it.</div>
+  <div class="legal-footer">© 2026 Rahul K Vimal. Preg Journey Tracker. All rights reserved.</div>
 </div>
 
 <script>
@@ -676,14 +682,14 @@
       version:2,
       createdAt:new Date().toISOString(),
       profile:{
-        displayName:val('herName') ? val('herName')+'\'s Pregnancy Dashboard' : 'Pregnancy Dashboard',
+        displayName:val('herName') ? val('herName')+'\'s Pregnancy Journey' : 'Pregnancy Journey',
         expectedDate,
         expectedDateSource,
         expectedDateIsEstimate:!suppliedEdd && !!expectedDate,
         lastMenstrualPeriod:lmp,
         proteinTarget:val('proteinTarget'), waterTarget:val('waterTarget'),
         kickMethod:getRadio('hasKickMethod')==='Yes' ? val('kickMethod') : '',
-        medicalDisclaimer:'This dashboard organises information supplied by you. It is not medical advice. Confirm medicines, diet, movement targets and symptoms with the treating clinician.'
+        medicalDisclaimer:'This journey organises information supplied by you. It is not medical advice. Confirm medicines, diet, movement targets and symptoms with the treating clinician.'
       },
       dailyPlan,
       dos:customItems.filter(x=>!/^avoid\b|^do not\b|^don.t\b/i.test(x)),
@@ -741,7 +747,7 @@
     const blob=new Blob([JSON.stringify(config,null,2)],{type:'application/json'});
     const url=URL.createObjectURL(blob); const a=document.createElement('a');
     const slug=(val('herName')||'personal').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-    a.href=url; a.download=(slug||'personal')+'-pregnancy-dashboard-config.json';
+    a.href=url; a.download=(slug||'personal')+'-pregnancy-journey-config.json';
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),1000);
   });
 

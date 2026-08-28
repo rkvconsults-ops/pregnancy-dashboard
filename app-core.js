@@ -135,7 +135,7 @@
   }
 
   function validateBackup(value){
-    if(!value || value.format!=='pregnancy-dashboard-backup' || value.version!==1) throw new Error('This is not a supported dashboard backup');
+    if(!value || value.format!=='pregnancy-dashboard-backup' || value.version!==1) throw new Error('This is not a supported journey backup');
     if(!value.data || typeof value.data!=='object') throw new Error('Backup data is missing');
     return value;
   }

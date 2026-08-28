@@ -1,8 +1,8 @@
 {
-  "name": "Pregnancy Dashboard",
-  "short_name": "Pregnancy",
+  "name": "Preg Journey Tracker",
+  "short_name": "Preg Journey",
   "id": "./?app=pregnancy-dashboard-v3",
-  "description": "Daily pregnancy routine, kick counter and weight log.",
+  "description": "Personal pregnancy journey, daily routine, kick counter and weight log.",
   "start_url": "./?app=pregnancy-dashboard-v3",
   "scope": ".",
   "display": "standalone",
